@@ -151,14 +151,9 @@ make cache-clear
 
 Or use `docker compose` directly if you prefer.
 
-### Frontend assets (optional)
+### Frontend
 
-The welcome page works without a build. To compile Vite assets on the host:
-
-```bash
-npm install
-npm run dev
-```
+No Node.js or build step. The landing page uses plain CSS and vanilla JavaScript in `public/css/` and `public/js/`. Brand images live in `public/images/`.
 
 ---
 
