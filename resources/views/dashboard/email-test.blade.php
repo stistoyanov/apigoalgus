@@ -96,7 +96,11 @@
                             </tr>
                             <tr>
                                 <td><strong>SMTP port 465</strong> (outgoing, SSL/TLS)</td>
-                                <td><strong>Yes — use this on production</strong></td>
+                                <td>For email clients only — <strong>not</strong> for PHP on Superhosting (connection refused)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SMTP port 25</strong> (on-server scripts)</td>
+                                <td><strong>Yes — use this in Laravel on production</strong></td>
                             </tr>
                             <tr>
                                 <td>CalDAV / CardDAV (ports 2080 / 2079)</td>
@@ -110,27 +114,22 @@
                     </table>
                 </div>
 
-                <h2>Production <code>.env</code> (matches cPanel “Secure SSL/TLS”)</h2>
-                <p>On the server only — use the mailbox password from cPanel → Email Accounts:</p>
+                <h2>Production <code>.env</code> (Superhosting — PHP on the server)</h2>
+                <p>On the server only. Port <strong>465</strong> works from your Mac/phone but is <strong>refused</strong> when PHP on Superhosting connects — use port <strong>25</strong> without SSL per <a href="https://help.superhosting.bg/smtp-settings-in-script.html" target="_blank" rel="noopener">their script guide</a>:</p>
 
                 <pre class="env-sample">MAIL_MAILER=smtp
 MAIL_HOST=api.goalgus.bg
-MAIL_PORT=465
-MAIL_SCHEME=smtps
+MAIL_PORT=25
+MAIL_SCHEME=null
 MAIL_USERNAME=support@api.goalgus.bg
 MAIL_PASSWORD=your-cpanel-email-password
 MAIL_FROM_ADDRESS=support@api.goalgus.bg
 MAIL_FROM_NAME="${APP_NAME}"</pre>
 
-                <p><code>MAIL_SCHEME=smtps</code> = SSL on port 465, same as cPanel’s recommended outgoing settings.</p>
+                <p>SSH: <code>php artisan config:clear</code> after saving <code>.env</code>, then test again here.</p>
 
-                <h2>Alternative if 465 fails</h2>
-                <p>Superhosting’s <a href="https://help.superhosting.bg/smtp-settings-in-script.html" target="_blank" rel="noopener">script documentation</a> allows port 25 without encryption when PHP runs on their server:</p>
-
-                <pre class="env-sample">MAIL_PORT=25
-MAIL_SCHEME=null</pre>
-
-                <p>Then run <code>php artisan config:clear</code> and test from this page.</p>
+                <h2>Email clients (Outlook, iPhone)</h2>
+                <p>cPanel “Secure SSL/TLS” with port <strong>465</strong> is correct for those apps — keep that in your mail app, not in Laravel on the server.</p>
 
                 <h2>Also in cPanel</h2>
                 <ul>
