@@ -15,8 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withSchedule(function (Schedule $schedule) {
-        // Define scheduled tasks here, e.g.:
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('scheduler:heartbeat')
+            ->everyMinute()
+            ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
