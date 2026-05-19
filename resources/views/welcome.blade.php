@@ -25,7 +25,16 @@
                 <a href="#features">Features</a>
                 <a href="#status">Status</a>
                 <a href="https://goalgus.bg" target="_blank" rel="noopener noreferrer">goalgus.bg</a>
-                <a href="{{ url('/up') }}" class="btn btn-primary">API health</a>
+                <a href="{{ url('/up') }}">API health</a>
+                @auth
+                    <a href="{{ route('dashboard') }}" class="btn btn-primary">Dashboard</a>
+                    <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-outline" style="cursor:pointer;font-family:inherit;">Log out</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="btn btn-primary">Login</a>
+                @endauth
             </nav>
         </div>
     </header>
@@ -97,7 +106,7 @@
 
     <footer class="site-footer">
         <div class="container footer-inner">
-            <img src="{{ asset('images/GoalgusLogo.png') }}" alt="Goalgus">
+            <img class="footer-logo" src="{{ asset('images/GoalgusLogoIcon.png') }}" alt="Goalgus" width="40" height="40">
             <nav class="footer-links" aria-label="Footer">
                 <a href="https://goalgus.bg" target="_blank" rel="noopener noreferrer">goalgus.bg</a>
                 <a href="{{ url('/up') }}">Health check</a>

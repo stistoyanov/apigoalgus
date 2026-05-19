@@ -56,7 +56,9 @@ Run `make` or `make help` to list all targets. Common shortcuts:
 | `make deploy-setup` | Create `deploy/deploy.env` from example |
 | `make deploy-merge` | Merge `main` into `live` |
 | `make deploy-dry-run` | Preview deploy (rsync dry run) |
-| `make deploy` | Deploy to Superhosting (from `live` branch) |
+| `make deploy` | Deploy Laravel API to `public_html/apigoalgus` |
+| `make deploy-barbergarage` | Deploy static site to `public_html/barbergarage` |
+| `make deploy-all` | Deploy both API and barbergarage |
 | `make ssh` | SSH to production server |
 
 ---
@@ -217,6 +219,7 @@ Deploy syncs code with `rsync` over SSH. It **only** runs from the `live` branch
    DEPLOY_SSH_PORT=1022
    DEPLOY_SSH_USER=goalgusb
    DEPLOY_REMOTE_PATH=public_html/apigoalgus
+   DEPLOY_BARBERGARAGE_REMOTE_PATH=public_html/barbergarage
    DEPLOY_PHP_BIN=/usr/local/bin/ea-php83
    DEPLOY_COMPOSER_BIN=/opt/cpanel/composer/bin/composer
    ```
@@ -257,7 +260,32 @@ make deploy
    - `php artisan route:cache`
    - `php artisan view:cache`
 
-**Excluded from sync** (stay on server or are rebuilt there): `.env`, `vendor/`, `node_modules/`, `storage/logs/`, compiled views/cache, `docker/`, `.git/`.
+**Excluded from sync** (stay on server or are rebuilt there): `.env`, `vendor/`, `node_modules/`, `storage/logs/`, compiled views/cache, `docker/`, `.git/`, `barbergarage/`.
+
+### Deploy barbergarage (static HTML/JS)
+
+The [barbergarage/](barbergarage/) folder is a separate static website (HTML, CSS, vanilla JS). It deploys to its own path on the same server — **not** inside the Laravel app.
+
+| Setting | Value |
+|---------|-------|
+| Local source | `barbergarage/` |
+| Remote path | `~/public_html/barbergarage` |
+| Live URL | Your barbergarage.bg domain (document root must point at this folder in cPanel) |
+
+```bash
+git checkout live
+git status              # must be clean
+
+make deploy-barbergarage-check
+make deploy-barbergarage-dry-run   # optional preview
+make deploy-barbergarage
+```
+
+No Composer or Artisan steps — rsync only. To deploy **both** sites in one go:
+
+```bash
+make deploy-all
+```
 
 ---
 

@@ -151,6 +151,15 @@ a:hover {
     color: var(--blue-600);
 }
 
+.nav form {
+    display: inline;
+    margin: 0;
+}
+
+.nav form button.btn {
+    font-family: inherit;
+}
+
 /* Hero */
 .hero {
     position: relative;
@@ -372,11 +381,10 @@ a:hover {
     gap: 1rem;
 }
 
-.footer-inner img {
-    height: 36px;
+.footer-logo {
+    height: 40px;
     width: auto;
-    opacity: 0.95;
-    filter: brightness(0) invert(1);
+    object-fit: contain;
 }
 
 .footer-links {

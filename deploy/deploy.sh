@@ -88,6 +88,7 @@ rsync "${RSYNC_FLAGS[@]}" --delete \
     --exclude='cache/' \
     --exclude='cgi-bin/' \
     --exclude='tests/' \
+    --exclude='barbergarage/' \
     "${PROJECT_ROOT}/" \
     "${RSYNC_TARGET}"
 

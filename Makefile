@@ -182,6 +182,21 @@ deploy-merge: ## Merge main into live (does not deploy)
 	@git merge main
 	@echo "Merged main into live. Run 'make deploy' from the live branch when ready."
 
+.PHONY: deploy-barbergarage-check
+deploy-barbergarage-check: ## Verify barbergarage deploy prerequisites
+	@./deploy/deploy-barbergarage.sh --check
+
+.PHONY: deploy-barbergarage
+deploy-barbergarage: ## Deploy barbergarage static site (live branch, clean tree)
+	@./deploy/deploy-barbergarage.sh
+
+.PHONY: deploy-barbergarage-dry-run
+deploy-barbergarage-dry-run: ## Preview barbergarage rsync without deploying
+	@./deploy/deploy-barbergarage.sh --dry-run
+
+.PHONY: deploy-all
+deploy-all: deploy deploy-barbergarage ## Deploy apigoalgus API and barbergarage site
+
 .PHONY: ssh
 ssh: ## SSH to Superhosting (uses deploy/deploy.env)
 	@set -a && . deploy/deploy.env && set +a && \
