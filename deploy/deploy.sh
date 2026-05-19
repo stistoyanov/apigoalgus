@@ -34,7 +34,7 @@ source "${ENV_FILE}"
 : "${DEPLOY_REMOTE_PATH:?DEPLOY_REMOTE_PATH is required}"
 
 DEPLOY_PHP_BIN="${DEPLOY_PHP_BIN:-php}"
-DEPLOY_COMPOSER="${DEPLOY_COMPOSER:-composer}"
+DEPLOY_COMPOSER_BIN="${DEPLOY_COMPOSER_BIN:-/opt/cpanel/composer/bin/composer}"
 
 SSH_TARGET="${DEPLOY_SSH_USER}@${DEPLOY_SSH_HOST}"
 RSYNC_TARGET="${SSH_TARGET}:${DEPLOY_REMOTE_PATH}/"
@@ -52,9 +52,11 @@ fi
 
 if [[ "${CHECK_ONLY}" == true ]]; then
     echo "Deploy check passed:"
-    echo "  Branch:  ${CURRENT_BRANCH}"
-    echo "  Target:  ${RSYNC_TARGET}"
-    echo "  SSH:     ssh -p ${DEPLOY_SSH_PORT} ${SSH_TARGET}"
+    echo "  Branch:   ${CURRENT_BRANCH}"
+    echo "  Target:   ${RSYNC_TARGET}"
+    echo "  SSH:      ssh -p ${DEPLOY_SSH_PORT} ${SSH_TARGET}"
+    echo "  PHP:      ${DEPLOY_PHP_BIN}"
+    echo "  Composer: ${DEPLOY_PHP_BIN} ${DEPLOY_COMPOSER_BIN}"
     exit 0
 fi
 
@@ -70,6 +72,9 @@ rsync "${RSYNC_FLAGS[@]}" --delete \
     -e "ssh ${SSH_OPTS[*]}" \
     --exclude='.git/' \
     --exclude='.env' \
+    --exclude='.env.live' \
+    --exclude='.env.backup' \
+    --exclude='.env.production' \
     --exclude='vendor/' \
     --exclude='node_modules/' \
     --exclude='storage/logs/' \
@@ -97,7 +102,7 @@ ssh "${SSH_OPTS[@]}" "${SSH_TARGET}" bash -s <<REMOTE
 set -euo pipefail
 cd ~/${DEPLOY_REMOTE_PATH}
 
-${DEPLOY_COMPOSER} install --no-dev --optimize-autoloader --no-interaction
+${DEPLOY_PHP_BIN} ${DEPLOY_COMPOSER_BIN} install --no-dev --optimize-autoloader --no-interaction
 ${DEPLOY_PHP_BIN} artisan migrate --force
 ${DEPLOY_PHP_BIN} artisan config:cache
 ${DEPLOY_PHP_BIN} artisan route:cache

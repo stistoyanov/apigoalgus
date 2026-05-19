@@ -217,19 +217,19 @@ Deploy syncs code with `rsync` over SSH. It **only** runs from the `live` branch
    DEPLOY_SSH_PORT=1022
    DEPLOY_SSH_USER=goalgusb
    DEPLOY_REMOTE_PATH=public_html/apigoalgus
-   DEPLOY_PHP_BIN=php
-   DEPLOY_COMPOSER=composer
+   DEPLOY_PHP_BIN=/usr/local/bin/ea-php83
+   DEPLOY_COMPOSER_BIN=/opt/cpanel/composer/bin/composer
    ```
 
-3. On the server, verify PHP and Composer paths over SSH:
+   On Superhosting, `composer` is not on the default PATH — use cPanel’s binary with PHP 8.3 (matches the web handler).
+
+3. Verify paths over SSH if needed:
 
    ```bash
    ssh -p 1022 goalgusb@goalgus.bg
-   which php
-   which composer
+   /usr/local/bin/ea-php83 -v
+   /opt/cpanel/composer/bin/composer --version
    ```
-
-   Put the correct values in `DEPLOY_PHP_BIN` and `DEPLOY_COMPOSER` in `deploy/deploy.env`.
 
 4. Ensure production `.env` already exists on the server at `~/public_html/apigoalgus/.env`. The deploy script **never** uploads `.env` from your machine.
 
@@ -341,4 +341,4 @@ composer install --no-dev --optimize-autoloader
 php artisan migrate --force
 ```
 
-Update `DEPLOY_PHP_BIN` / `DEPLOY_COMPOSER` in `deploy/deploy.env` with the paths from `which php` and `which composer`.
+Update `DEPLOY_PHP_BIN` and `DEPLOY_COMPOSER_BIN` in `deploy/deploy.env` (see `deploy/deploy.env.example`).
