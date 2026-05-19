@@ -9,6 +9,7 @@ Laravel 11 API application for [api.goalgus.bg](https://api.goalgus.bg), hosted 
 ## Table of contents
 
 - [Prerequisites](#prerequisites)
+- [Makefile commands](#makefile-commands)
 - [Clone the project](#clone-the-project)
 - [First-time local setup](#first-time-local-setup)
 - [Local development (Docker)](#local-development-docker)
@@ -33,6 +34,31 @@ Install on your Mac before you start:
 
 Optional: [TablePlus](https://tableplus.com/) or another MySQL client to inspect the local database on port `33069`.
 
+`make` is available on macOS by default (Xcode Command Line Tools).
+
+---
+
+## Makefile commands
+
+Run `make` or `make help` to list all targets. Common shortcuts:
+
+| Command | Description |
+|---------|-------------|
+| `make setup` | First-time local setup (`.env`, Docker, composer, key, migrate) |
+| `make up` / `make down` | Start / stop containers |
+| `make logs-scheduler` | Follow scheduler container logs |
+| `make shell` | Bash shell inside the app container |
+| `make install` | `composer install` in Docker |
+| `make migrate` | `php artisan migrate` |
+| `make artisan cmd="route:list"` | Any Artisan command |
+| `make tinker` | Laravel Tinker |
+| `make test` | Run PHPUnit |
+| `make deploy-setup` | Create `deploy/deploy.env` from example |
+| `make deploy-merge` | Merge `main` into `live` |
+| `make deploy-dry-run` | Preview deploy (rsync dry run) |
+| `make deploy` | Deploy to Superhosting (from `live` branch) |
+| `make ssh` | SSH to production server |
+
 ---
 
 ## Clone the project
@@ -53,25 +79,26 @@ git checkout live    # production-ready code (deploy from this branch only)
 
 ## First-time local setup
 
-Run these steps once after cloning:
+After cloning, run:
 
 ```bash
-# 1. Local environment (Docker values — see .env.example)
+make setup
+make open
+```
+
+This copies `.env.example` → `.env` (if needed), builds and starts Docker, runs `composer install`, `key:generate`, and `migrate`.
+
+You should see the Laravel welcome page. If you get a 500 error, confirm `.env` has `DB_HOST=mysql` (not `localhost`) — that hostname is correct **inside** Docker.
+
+Manual equivalent:
+
+```bash
 cp .env.example .env
-
-# 2. Start containers
 docker compose up -d --build
-
-# 3. Install PHP dependencies and initialize Laravel
 docker compose exec app composer install
 docker compose exec app php artisan key:generate
 docker compose exec app php artisan migrate
-
-# 4. Open the app
-open http://localhost:8069
 ```
-
-You should see the Laravel welcome page. If you get a 500 error, confirm `.env` has `DB_HOST=mysql` (not `localhost`) — that hostname is correct **inside** Docker.
 
 ---
 
@@ -82,7 +109,19 @@ You should see the Laravel welcome page. If you get a 500 error, confirm `.env` 
 | Service | Container | Host access |
 |---------|-----------|-------------|
 | Web (nginx + PHP 8.3-FPM) | `nginx` + `app` | [http://localhost:8069](http://localhost:8069) |
+| Scheduler | `scheduler` | Runs `php artisan schedule:work` (no host port) |
 | MySQL 8.0 | `mysql` | `127.0.0.1:33069` |
+
+**Scheduler (local vs production)**
+
+- **Local Docker:** the `scheduler` container runs [`schedule:work`](https://laravel.com/docs/scheduling#running-the-scheduler-locally) continuously — no cron daemon required.
+- **Superhosting:** keep your existing cPanel cron entry: `* * * * * php /path/to/artisan schedule:run`.
+
+Define tasks in [`bootstrap/app.php`](bootstrap/app.php) inside `->withSchedule(...)`.
+
+```bash
+make logs-scheduler   # watch scheduler output
+```
 
 Default database credentials (local only):
 
@@ -99,26 +138,18 @@ Inside the app container, `.env` must use `DB_HOST=mysql` and `DB_PORT=3306` (se
 ### Day-to-day commands
 
 ```bash
-# Start / stop
-docker compose up -d
-docker compose down
-
-# Logs
-docker compose logs -f app
-docker compose logs -f nginx
-
-# Artisan
-docker compose exec app php artisan migrate
-docker compose exec app php artisan tinker
-docker compose exec app php artisan route:list
-
-# Composer
-docker compose exec app composer install
-docker compose exec app composer update
-
-# Rebuild after Dockerfile changes
-docker compose up -d --build
+make up              # start containers
+make down            # stop containers
+make build           # rebuild and start
+make logs            # app logs
+make shell           # shell in app container
+make migrate         # run migrations
+make artisan cmd="make:model Post"
+make composer args="require package/name"
+make cache-clear
 ```
+
+Or use `docker compose` directly if you prefer.
 
 ### Frontend assets (optional)
 
@@ -181,7 +212,7 @@ Deploy syncs code with `rsync` over SSH. It **only** runs from the `live` branch
 1. Copy deploy config (not committed to Git):
 
    ```bash
-   cp deploy/deploy.env.example deploy/deploy.env
+   make deploy-setup
    ```
 
 2. Edit `deploy/deploy.env` if needed. Defaults:
@@ -210,11 +241,13 @@ Deploy syncs code with `rsync` over SSH. It **only** runs from the `live` branch
 ### Deploy steps
 
 ```bash
+make deploy-merge       # merge main into live (optional helper)
 git checkout live
-git merge main          # if needed
 git status              # must be clean
 
-./deploy/deploy.sh
+make deploy-check       # verify branch, deploy.env, clean tree
+make deploy-dry-run     # optional: preview rsync
+make deploy
 ```
 
 ### What the deploy script does
@@ -252,7 +285,10 @@ DB_PORT=3306
 DB_DATABASE=apigoalgus
 DB_USERNAME=apigoalgus
 DB_PASSWORD=secret
+QUEUE_CONNECTION=sync
 ```
+
+On production, set `QUEUE_CONNECTION=sync` in the server `.env` (deploy does not sync `.env`).
 
 **Production `.env`** — lives only on Superhosting; set `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://api.goalgus.bg`, and real database credentials. Manage it via SSH or cPanel File Manager.
 
@@ -272,7 +308,7 @@ DB_PASSWORD=secret
 - PHP on Superhosting is configured via root [`.htaccess`](.htaccess) (PHP 8.3 handler).
 - `vendor/` is installed on the server during deploy, not synced from your Mac.
 - Local Docker uses `public/` as the web root; cPanel may point the subdomain at the project root or `public/` — check the hosting panel if URLs behave differently than locally.
-- Queue worker and scheduler cron are not configured yet (out of scope for initial setup).
+- All jobs run **synchronously** (`QUEUE_CONNECTION=sync`) — no queue worker or `jobs` database tables. Scheduled tasks use the `scheduler` container locally and cPanel cron (`schedule:run`) on production.
 
 ---
 

@@ -5,22 +5,23 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${SCRIPT_DIR}/deploy.env"
 
+DRY_RUN=false
+CHECK_ONLY=false
+
+for arg in "$@"; do
+    case "${arg}" in
+        --dry-run) DRY_RUN=true ;;
+        --check) CHECK_ONLY=true ;;
+    esac
+done
+
 cd "${PROJECT_ROOT}"
 
 # --- Guards ---
 CURRENT_BRANCH="$(git branch --show-current)"
-if [[ "${CURRENT_BRANCH}" != "live" ]]; then
-    echo "Error: deploy only allowed from the 'live' branch (current: ${CURRENT_BRANCH})."
-    exit 1
-fi
-
-if [[ -n "$(git status --porcelain)" ]]; then
-    echo "Error: working tree is not clean. Commit or stash changes before deploying."
-    exit 1
-fi
 
 if [[ ! -f "${ENV_FILE}" ]]; then
-    echo "Error: ${ENV_FILE} not found. Copy deploy/deploy.env.example to deploy/deploy.env"
+    echo "Error: ${ENV_FILE} not found. Run: make deploy-setup"
     exit 1
 fi
 
@@ -39,9 +40,33 @@ SSH_TARGET="${DEPLOY_SSH_USER}@${DEPLOY_SSH_HOST}"
 RSYNC_TARGET="${SSH_TARGET}:${DEPLOY_REMOTE_PATH}/"
 SSH_OPTS=(-p "${DEPLOY_SSH_PORT}")
 
+if [[ "${CURRENT_BRANCH}" != "live" ]]; then
+    echo "Error: deploy only allowed from the 'live' branch (current: ${CURRENT_BRANCH})."
+    exit 1
+fi
+
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Error: working tree is not clean. Commit or stash changes before deploying."
+    exit 1
+fi
+
+if [[ "${CHECK_ONLY}" == true ]]; then
+    echo "Deploy check passed:"
+    echo "  Branch:  ${CURRENT_BRANCH}"
+    echo "  Target:  ${RSYNC_TARGET}"
+    echo "  SSH:     ssh -p ${DEPLOY_SSH_PORT} ${SSH_TARGET}"
+    exit 0
+fi
+
+RSYNC_FLAGS=(-avz)
+if [[ "${DRY_RUN}" == true ]]; then
+    RSYNC_FLAGS+=(-n)
+    echo "==> DRY RUN — no changes will be made"
+fi
+
 echo "==> Deploying from branch '${CURRENT_BRANCH}' to ${RSYNC_TARGET}"
 
-rsync -avz --delete \
+rsync "${RSYNC_FLAGS[@]}" --delete \
     -e "ssh ${SSH_OPTS[*]}" \
     --exclude='.git/' \
     --exclude='.env' \
@@ -60,6 +85,11 @@ rsync -avz --delete \
     --exclude='tests/' \
     "${PROJECT_ROOT}/" \
     "${RSYNC_TARGET}"
+
+if [[ "${DRY_RUN}" == true ]]; then
+    echo "==> Dry run complete. Remote commands skipped."
+    exit 0
+fi
 
 echo "==> Running post-deploy commands on server..."
 

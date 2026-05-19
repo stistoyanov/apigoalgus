@@ -1,15 +1,18 @@
+x-app: &app
+  build:
+    context: .
+    dockerfile: docker/php/Dockerfile
+  volumes:
+    - .:/var/www/html
+  depends_on:
+    mysql:
+      condition: service_healthy
+  networks:
+    - apigoalgus
+
 services:
   app:
-    build:
-      context: .
-      dockerfile: docker/php/Dockerfile
-    volumes:
-      - .:/var/www/html
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - apigoalgus
+    <<: *app
 
   nginx:
     image: nginx:alpine
@@ -41,6 +44,16 @@ services:
       retries: 10
     networks:
       - apigoalgus
+
+  scheduler:
+    <<: *app
+    command: php artisan schedule:work
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      app:
+        condition: service_started
 
 networks:
   apigoalgus:
