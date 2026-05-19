@@ -491,6 +491,14 @@
     padding-left: 1.25rem;
 }
 
+.sendmail-path {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    word-break: break-all;
+    margin-top: 0.25rem;
+}
+
 .env-sample {
     background: #0f172a;
     color: #e2e8f0;

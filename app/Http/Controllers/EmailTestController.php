@@ -15,6 +15,7 @@ class EmailTestController extends Controller
     {
         $mailer = config('mail.default');
         $smtp = config('mail.mailers.smtp');
+        $sendmail = config('mail.mailers.sendmail');
 
         return view('dashboard.email-test', [
             'mailer' => $mailer,
@@ -24,6 +25,8 @@ class EmailTestController extends Controller
             'passwordConfigured' => filled($smtp['password'] ?? null),
             'scheme' => $smtp['scheme'] ?? env('MAIL_SCHEME'),
             'encryptionLabel' => self::encryptionLabel($smtp['scheme'] ?? env('MAIL_SCHEME'), (int) ($smtp['port'] ?? 0)),
+            'sendmailPath' => $sendmail['path'] ?? null,
+            'configCached' => file_exists(base_path('bootstrap/cache/config.php')),
             'from' => config('mail.from'),
             'defaultTo' => auth()->user()->email,
         ]);
@@ -44,9 +47,14 @@ class EmailTestController extends Controller
         } catch (Throwable $e) {
             report($e);
 
+            $message = 'Could not send email: '.$e->getMessage();
+            if (file_exists(base_path('bootstrap/cache/config.php'))) {
+                $message .= ' — config is cached; run php artisan config:clear on the server after changing .env.';
+            }
+
             return back()
                 ->withInput()
-                ->with('error', 'Could not send email: '.$e->getMessage());
+                ->with('error', $message);
         }
 
         $hint = config('mail.default') === 'log'

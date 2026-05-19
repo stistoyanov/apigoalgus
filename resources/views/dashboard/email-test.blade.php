@@ -34,8 +34,27 @@
                         · <span class="text-warn">no password</span>
                     @endif
                 </div>
+            @elseif ($mailer === 'sendmail')
+                <div class="meta-card">
+                    <strong>Sendmail</strong>
+                    <code class="sendmail-path">{{ $sendmailPath }}</code>
+                </div>
             @endif
         </div>
+
+        @if ($configCached)
+            <div class="status-banner warn">
+                Configuration is <strong>cached</strong> (deploy runs <code>config:cache</code>). After editing
+                <code>.env</code> on the server, run <code>php artisan config:clear</code> or changes will not apply.
+            </div>
+        @endif
+
+        @if (! in_array($mailer, ['log', 'smtp', 'sendmail', 'array'], true))
+            <div class="status-banner error">
+                <code>MAIL_MAILER={{ $mailer }}</code> is not valid. Use <code>smtp</code> or <code>sendmail</code> —
+                <code>localhost</code> is a <strong>host</strong> (<code>MAIL_HOST</code>), not a mailer.
+            </div>
+        @endif
 
         @if ($mailer === 'log')
             <div class="status-banner warn">
@@ -114,11 +133,15 @@
                     </table>
                 </div>
 
-                <h2>Production <code>.env</code> (Superhosting — PHP on the server)</h2>
-                <p>On the server only. Port <strong>465</strong> works from your Mac/phone but is <strong>refused</strong> when PHP on Superhosting connects — use port <strong>25</strong> without SSL per <a href="https://help.superhosting.bg/smtp-settings-in-script.html" target="_blank" rel="noopener">their script guide</a>:</p>
+                <h2><code>MAIL_MAILER</code> vs <code>MAIL_HOST</code></h2>
+                <ul>
+                    <li><code>MAIL_MAILER</code> — driver: <code>smtp</code>, <code>sendmail</code>, or <code>log</code> (never <code>localhost</code>)</li>
+                    <li><code>MAIL_HOST</code> — server name when using SMTP: <code>localhost</code> or <code>api.goalgus.bg</code></li>
+                </ul>
 
+                <h2>Production <code>.env</code> — try SMTP on localhost:25 first</h2>
                 <pre class="env-sample">MAIL_MAILER=smtp
-MAIL_HOST=api.goalgus.bg
+MAIL_HOST=localhost
 MAIL_PORT=25
 MAIL_SCHEME=null
 MAIL_USERNAME=support@api.goalgus.bg
@@ -126,10 +149,16 @@ MAIL_PASSWORD=your-cpanel-email-password
 MAIL_FROM_ADDRESS=support@api.goalgus.bg
 MAIL_FROM_NAME="${APP_NAME}"</pre>
 
-                <p>SSH: <code>php artisan config:clear</code> after saving <code>.env</code>, then test again here.</p>
+                <p>Do <strong>not</strong> set <code>MAIL_SCHEME=smtps</code> or port <code>465</code> on the server.</p>
+                <p>After saving <code>.env</code>: <code>php artisan config:clear</code> (required — deploy caches config).</p>
+
+                <h2>Fallback — sendmail (no SMTP host/port)</h2>
+                <pre class="env-sample">MAIL_MAILER=sendmail
+MAIL_FROM_ADDRESS=support@api.goalgus.bg
+MAIL_FROM_NAME="${APP_NAME}"</pre>
 
                 <h2>Email clients (Outlook, iPhone)</h2>
-                <p>cPanel “Secure SSL/TLS” with port <strong>465</strong> is correct for those apps — keep that in your mail app, not in Laravel on the server.</p>
+                <p>cPanel port <strong>465</strong> + SSL is only for mail apps on your computer/phone, not for PHP on Superhosting.</p>
 
                 <h2>Also in cPanel</h2>
                 <ul>
