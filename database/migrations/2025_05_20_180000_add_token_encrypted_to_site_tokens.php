@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasColumn('site_tokens', 'token_encrypted')) {
+            return;
+        }
+
         Schema::table('site_tokens', function (Blueprint $table) {
             $table->text('token_encrypted')->nullable()->after('token_hash');
         });
@@ -15,6 +19,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasColumn('site_tokens', 'token_encrypted')) {
+            return;
+        }
+
         Schema::table('site_tokens', function (Blueprint $table) {
             $table->dropColumn('token_encrypted');
         });
