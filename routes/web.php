@@ -92,6 +92,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/dashboard/sites/{site:slug}/settings', [SiteSettingsController::class, 'update'])->name('dashboard.sites.settings.save');
         Route::get('/dashboard/sites/{site:slug}/media', [SiteMediaController::class, 'index'])->name('dashboard.sites.media');
         Route::post('/dashboard/sites/{site:slug}/media', [SiteMediaController::class, 'store'])->name('dashboard.sites.media.upload');
+        Route::post('/dashboard/sites/{site:slug}/media/brand/{purpose}', [SiteMediaController::class, 'replaceBrand'])
+            ->whereIn('purpose', ['hero_bg', 'about_photo', 'logo', 'favicon'])
+            ->name('dashboard.sites.media.brand');
         Route::post('/dashboard/sites/{site:slug}/media/{media}/delete', [SiteMediaController::class, 'destroy'])->name('dashboard.sites.media.destroy');
         Route::post('/dashboard/sites/{site:slug}/media/{media}/move', [SiteMediaController::class, 'move'])->name('dashboard.sites.media.move');
         Route::get('/dashboard/sites/{site:slug}/tokens', [SiteTokenController::class, 'index'])->name('dashboard.sites.tokens');

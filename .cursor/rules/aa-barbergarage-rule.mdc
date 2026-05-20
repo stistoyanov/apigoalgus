@@ -35,7 +35,7 @@ Conventions:
 - **Token is server-only.** Never expose `api_token` in client JS or HTML output.
 - **Stale-while-error.** If the API is unreachable, the PHP shell keeps serving the last cached JSON, regardless of age. Total outages only happen on first load before any cache exists.
 - **Maps key stays on the BarberGarage side** (`config.php`), restricted by HTTP referrer in Google Cloud Console. The dashboard owns lat/lng/zoom; the BarberGarage shell composes the embed URL.
-- **Hero background + logo + favicon** still load from `barbergarage/images/website/` static files. The dashboard `logo`/`favicon`/`hero_bg` media rows exist for future Phase 3 work but are not consumed by the PHP shell yet.
+- **Brand assets** (`hero_bg`, `about_photo`, `logo`, `favicon`) are single-slot uploads managed in the Sites dashboard (`/dashboard/sites/barbergarage/media`). The PHP shell consumes them through the API; the only client-side static fallback is when a slot is empty. Use `POST /dashboard/sites/{slug}/media/brand/{purpose}` to replace; uploading a new file deletes the previous row + storage object.
 - **Deploy:** `deploy/deploy-barbergarage.sh` rsync excludes `config.php` and `cache/*` so production secrets and cache survive across deploys.
 - **First production deploy:** SSH in, `cp config.sample.php config.php`, edit and paste the raw token from the dashboard. The cache directory must be writable by the PHP user.
 

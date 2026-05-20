@@ -24,7 +24,46 @@
             </div>
         </div>
 
-        <h3 class="form-section-title">Upload gallery images</h3>
+        <h3 class="form-section-title">Brand assets</h3>
+        <p class="muted small" style="margin-top: -0.5rem;">Single-slot images used across the public site. Uploading a new file replaces the previous one.</p>
+
+        @php
+            $brandSlots = [
+                ['purpose' => 'hero_bg', 'label' => 'Hero background', 'hint' => 'Large image used behind the hero text (≥ 1920×1080 recommended).', 'accept' => 'image/*'],
+                ['purpose' => 'about_photo', 'label' => 'About / barber photo', 'hint' => 'Portrait shown in the About section (around 640×800).', 'accept' => 'image/*'],
+                ['purpose' => 'logo', 'label' => 'Header logo', 'hint' => 'Square mark shown in the site header (PNG with transparency recommended).', 'accept' => 'image/*'],
+                ['purpose' => 'favicon', 'label' => 'Favicon', 'hint' => 'Browser tab icon (PNG, ICO or SVG; square, 256×256+ ideal).', 'accept' => 'image/png,image/x-icon,image/svg+xml,image/jpeg'],
+            ];
+        @endphp
+
+        <div class="brand-grid">
+            @foreach ($brandSlots as $slot)
+                @php $current = $brand->get($slot['purpose']); @endphp
+                <div class="brand-slot">
+                    <div class="brand-slot__preview">
+                        @if ($current)
+                            <img src="{{ asset('storage/'.$current->relativePath()) }}" alt="{{ $slot['label'] }}">
+                        @else
+                            <div class="brand-slot__empty">No file</div>
+                        @endif
+                    </div>
+                    <div class="brand-slot__body">
+                        <strong>{{ $slot['label'] }}</strong>
+                        <p class="muted small">{{ $slot['hint'] }}</p>
+                        @if ($current)
+                            <p class="muted small">Current: {{ $current->original_name }} · {{ \App\Models\UploadedFile::formatBytes((int) $current->size_bytes) }}</p>
+                        @endif
+                        <form method="POST" action="{{ route('dashboard.sites.media.brand', ['site' => $site->slug, 'purpose' => $slot['purpose']]) }}" enctype="multipart/form-data" class="brand-slot__form">
+                            @csrf
+                            <input type="file" name="file" accept="{{ $slot['accept'] }}" required>
+                            <button type="submit" class="btn btn-primary btn-sm">{{ $current ? 'Replace' : 'Upload' }}</button>
+                        </form>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <h3 class="form-section-title" style="margin-top: 2rem;">Upload gallery images</h3>
         <form class="file-upload" method="POST" action="{{ route('dashboard.sites.media.upload', $site) }}" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="purpose" value="gallery">

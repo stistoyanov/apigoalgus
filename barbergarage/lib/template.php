@@ -43,8 +43,26 @@ $mapLng = (string) bg_setting($payload, 'map_lng', '');
 $mapZoom = (string) bg_setting($payload, 'map_zoom', '18');
 
 $aboutPhoto = bg_media_first($payload, 'about_photo');
+$heroBg = bg_media_first($payload, 'hero_bg');
+$logoMedia = bg_media_first($payload, 'logo');
+$faviconMedia = bg_media_first($payload, 'favicon');
 $video = bg_media_featured($payload, 'video');
 $gallery = is_array($payload['media']['gallery'] ?? null) ? $payload['media']['gallery'] : [];
+
+$logoUrl = ($logoMedia !== null && ! empty($logoMedia['url']))
+    ? $logoMedia['url']
+    : $assets.'images/website/IconTransperantSmallest.png';
+
+$faviconUrl = ($faviconMedia !== null && ! empty($faviconMedia['url']))
+    ? $faviconMedia['url']
+    : $assets.'images/website/IconTransperantSmallest.png';
+$faviconMime = ($faviconMedia !== null && ! empty($faviconMedia['mime_type']))
+    ? $faviconMedia['mime_type']
+    : 'image/png';
+
+$heroBgStyle = ($heroBg !== null && ! empty($heroBg['url']))
+    ? 'background-image: url(\''.addcslashes((string) $heroBg['url'], "'\\").'\');'
+    : '';
 
 $skipLink = $locale === 'en' ? 'Skip to content' : 'Към съдържанието';
 $menuLabel = $locale === 'en' ? 'Menu' : 'Меню';
@@ -65,7 +83,7 @@ $footerYear = date('Y');
     <title><?= bg_e($metaTitle) ?></title>
     <meta name="description" content="<?= bg_e($metaDescription) ?>" />
     <link rel="canonical" href="<?= bg_e($canonical) ?>" />
-    <link rel="icon" type="image/png" href="<?= bg_e($assets) ?>images/website/IconTransperantSmallest.png" />
+    <link rel="icon" type="<?= bg_e($faviconMime) ?>" href="<?= bg_e($faviconUrl) ?>" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -81,7 +99,7 @@ $footerYear = date('Y');
       <a class="brand" href="<?= bg_e($homeUrl) ?>">
         <img
           class="brand__logo"
-          src="<?= bg_e($assets) ?>images/website/IconTransperantSmallest.png"
+          src="<?= bg_e($logoUrl) ?>"
           width="44"
           height="44"
           alt=""
@@ -119,7 +137,7 @@ $footerYear = date('Y');
     <main>
       <section class="hero" aria-label="<?= bg_e($heroAriaLabel) ?>">
         <div class="hero__bg-wrap" aria-hidden="true">
-          <div class="hero__bg"></div>
+          <div class="hero__bg"<?= $heroBgStyle !== '' ? ' style="'.bg_e($heroBgStyle).'"' : '' ?>></div>
         </div>
         <div class="hero__overlay" aria-hidden="true"></div>
         <div class="hero__accent-line" aria-hidden="true"></div>

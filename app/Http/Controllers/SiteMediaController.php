@@ -18,6 +18,13 @@ class SiteMediaController extends Controller
 {
     private const DISK = 'public';
 
+    private const BRAND_PURPOSES = [
+        SiteMedia::PURPOSE_HERO_BG,
+        SiteMedia::PURPOSE_ABOUT_PHOTO,
+        SiteMedia::PURPOSE_LOGO,
+        SiteMedia::PURPOSE_FAVICON,
+    ];
+
     public function __construct(
         private SiteContentRepository $repository,
     ) {}
@@ -26,10 +33,16 @@ class SiteMediaController extends Controller
     {
         $settings = $this->repository->settingsMap($site);
 
+        $brand = $site->media()
+            ->whereIn('purpose', self::BRAND_PURPOSES)
+            ->get()
+            ->keyBy('purpose');
+
         return view('dashboard.sites.media', [
             'site' => $site,
             'gallery' => $site->media()->where('purpose', SiteMedia::PURPOSE_GALLERY)->orderBy('sort_order')->get(),
             'videos' => $site->media()->where('purpose', SiteMedia::PURPOSE_VIDEO)->orderBy('sort_order')->get(),
+            'brand' => $brand,
             'galleryCap' => (int) ($settings['gallery_cap'] ?? 150),
             'videoCap' => (int) ($settings['video_cap'] ?? 10),
             'perFileLimit' => UploadedFile::perFileLimitBytes(),
@@ -141,6 +154,72 @@ class SiteMediaController extends Controller
         );
 
         return back()->with('status', 'Media deleted.');
+    }
+
+    public function replaceBrand(Request $request, Site $site, string $purpose): RedirectResponse
+    {
+        if (! in_array($purpose, self::BRAND_PURPOSES, true)) {
+            abort(404);
+        }
+
+        $isImage = $purpose !== SiteMedia::PURPOSE_FAVICON;
+        $rules = [
+            'file' => ['required', 'file', 'max:'.(int) ceil(UploadedFile::perFileLimitBytes() / 1024)],
+        ];
+        if ($purpose === SiteMedia::PURPOSE_FAVICON) {
+            $rules['file'][] = 'mimes:png,ico,svg,jpg,jpeg';
+        } elseif ($isImage) {
+            $rules['file'][] = 'image';
+        }
+
+        $request->validate($rules);
+
+        $file = $request->file('file');
+        $perFileLimit = UploadedFile::perFileLimitBytes();
+        if ($perFileLimit > 0 && $file->getSize() > $perFileLimit) {
+            return back()->with('error', sprintf(
+                '"%s" exceeds the per-file limit of %s.',
+                $file->getClientOriginalName(),
+                UploadedFile::formatBytes($perFileLimit),
+            ));
+        }
+
+        $existing = SiteMedia::query()
+            ->where('site_id', $site->id)
+            ->where('purpose', $purpose)
+            ->get();
+        foreach ($existing as $row) {
+            Storage::disk(self::DISK)->delete($row->relativePath());
+            $row->delete();
+        }
+
+        $extension = strtolower($file->getClientOriginalExtension());
+        $storedName = (string) Str::uuid();
+        if ($extension !== '') {
+            $storedName .= '.'.$extension;
+        }
+
+        $file->storeAs('sites/'.$site->slug.'/images', $storedName, self::DISK);
+
+        SiteMedia::query()->create([
+            'site_id' => $site->id,
+            'kind' => SiteMedia::KIND_IMAGE,
+            'purpose' => $purpose,
+            'sort_order' => 0,
+            'original_name' => mb_substr($file->getClientOriginalName(), 0, 255),
+            'stored_name' => $storedName,
+            'mime_type' => $file->getMimeType(),
+            'size_bytes' => $file->getSize(),
+        ]);
+
+        ActivityLogger::log(
+            action: 'sites.media.uploaded',
+            user: $request->user(),
+            description: 'Replaced '.$purpose.' on '.$site->name.'.',
+            context: ['site' => $site->slug, 'purpose' => $purpose],
+        );
+
+        return back()->with('status', ucfirst(str_replace('_', ' ', $purpose)).' updated.');
     }
 
     public function move(Request $request, Site $site, SiteMedia $media): RedirectResponse

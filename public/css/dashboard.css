@@ -1389,6 +1389,80 @@ body.modal-open {
     font-size: 0.875rem;
 }
 
+.brand-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.brand-slot {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid rgba(37, 99, 199, 0.15);
+    border-radius: 10px;
+    background: #fff;
+    align-items: flex-start;
+}
+
+.brand-slot__preview {
+    flex-shrink: 0;
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--blue-50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(37, 99, 199, 0.12);
+}
+
+.brand-slot__preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+
+.brand-slot__empty {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.brand-slot__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.brand-slot__body strong {
+    font-size: 0.9375rem;
+}
+
+.brand-slot__body p {
+    margin: 0;
+}
+
+.brand-slot__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+}
+
+.brand-slot__form input[type="file"] {
+    font-size: 0.8125rem;
+}
+
+.brand-slot__form .btn {
+    align-self: flex-start;
+}
+
 .token-cell {
     display: flex;
     align-items: center;
