@@ -46,8 +46,14 @@ $aboutPhoto = bg_media_first($payload, 'about_photo');
 $heroBg = bg_media_first($payload, 'hero_bg');
 $logoMedia = bg_media_first($payload, 'logo');
 $faviconMedia = bg_media_first($payload, 'favicon');
-$video = bg_media_featured($payload, 'video');
 $gallery = is_array($payload['media']['gallery'] ?? null) ? $payload['media']['gallery'] : [];
+$videos = is_array($payload['media']['video'] ?? null) ? $payload['media']['video'] : [];
+usort($videos, function ($a, $b) {
+    $fa = !empty($a['is_featured']) ? 0 : 1;
+    $fb = !empty($b['is_featured']) ? 0 : 1;
+    if ($fa !== $fb) { return $fa <=> $fb; }
+    return ((int) ($a['sort_order'] ?? 0)) <=> ((int) ($b['sort_order'] ?? 0));
+});
 
 $logoUrl = ($logoMedia !== null && ! empty($logoMedia['url']))
     ? $logoMedia['url']
@@ -261,17 +267,32 @@ $footerYear = date('Y');
         <div class="section__inner">
           <h2 class="section__title"><?= bg_e(bg_content($payload, 'video', 'title')) ?></h2>
           <p class="section__subtitle"><?= bg_e(bg_content($payload, 'video', 'subtitle')) ?></p>
-          <?php if ($video !== null && ! empty($video['url'])): ?>
-            <?php $poster = bg_media_first($payload, 'gallery'); ?>
-            <div class="video-ambient">
-              <video
-                controls
-                preload="metadata"
-                playsinline
-                <?php if ($poster !== null && ! empty($poster['url'])): ?>poster="<?= bg_e($poster['url']) ?>"<?php endif; ?>
-              >
-                <source src="<?= bg_e($video['url']) ?>" type="<?= bg_e($video['mime_type'] ?? 'video/mp4') ?>" />
-              </video>
+          <?php if (! empty($videos)): ?>
+            <div
+              class="gallery__scroller video-gallery"
+              id="video-grid"
+              role="region"
+              aria-label="<?= bg_e($locale === 'en' ? 'Video gallery' : 'Видео галерия') ?>"
+              tabindex="0"
+            >
+              <?php foreach ($videos as $i => $item): ?>
+                <?php
+                  $url = (string) ($item['url'] ?? '');
+                  if ($url === '') { continue; }
+                  $mime = (string) ($item['mime_type'] ?? 'video/mp4');
+                  $label = ($locale === 'en' ? 'Video ' : 'Видео ').($i + 1);
+                ?>
+                <button
+                  type="button"
+                  class="gallery__item gallery__item--video"
+                  aria-label="<?= bg_e($label) ?>"
+                  data-video="<?= bg_e($url) ?>"
+                  data-mime="<?= bg_e($mime) ?>"
+                >
+                  <video src="<?= bg_e($url) ?>#t=0.5" preload="metadata" muted playsinline></video>
+                  <span class="gallery__play" aria-hidden="true">&#9658;</span>
+                </button>
+              <?php endforeach; ?>
             </div>
           <?php endif; ?>
         </div>
@@ -340,7 +361,9 @@ $footerYear = date('Y');
 
     <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true">
       <button type="button" class="lightbox__close" aria-label="<?= bg_e($closeLabel) ?>">&times;</button>
-      <img class="lightbox__img" id="lightbox-img" alt="" />
+      <button type="button" class="lightbox__nav lightbox__nav--prev" data-lightbox-prev aria-label="<?= bg_e($locale === 'en' ? 'Previous' : 'Предишна') ?>">&#8249;</button>
+      <button type="button" class="lightbox__nav lightbox__nav--next" data-lightbox-next aria-label="<?= bg_e($locale === 'en' ? 'Next' : 'Следваща') ?>">&#8250;</button>
+      <div class="lightbox__stage" id="lightbox-stage" aria-live="polite"></div>
     </div>
 
     <script src="<?= bg_e($assets) ?>js/site.js" defer></script>

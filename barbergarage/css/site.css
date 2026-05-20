@@ -673,25 +673,36 @@ a:hover {
   color: var(--accent-bright);
 }
 
-.video-ambient {
-  max-width: 52rem;
-  margin: 0 auto;
-}
-
-.video-ambient video {
-  display: block;
-  width: 100%;
-  max-height: min(70vh, 36rem);
-  border-radius: 4px;
-  border: 1px solid var(--border-subtle);
+.video-gallery .gallery__item--video {
+  cursor: pointer;
   background: #000;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .video-ambient video {
-    max-height: none;
-  }
+.video-gallery .gallery__item--video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.gallery__play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.85rem;
+  color: var(--text);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.25);
+  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out);
+  pointer-events: none;
+}
+
+.gallery__item--video:hover .gallery__play,
+.gallery__item--video:focus-visible .gallery__play {
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--accent-bright);
 }
 
 .contact-strip {
@@ -753,6 +764,14 @@ a:hover {
   pointer-events: auto;
 }
 
+.lightbox__stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: min(96vw, 1200px);
+  max-height: 90vh;
+}
+
 .lightbox__img {
   max-width: min(96vw, 1200px);
   max-height: 90vh;
@@ -761,10 +780,19 @@ a:hover {
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
 }
 
-.lightbox__close {
+.lightbox__video {
+  max-width: min(96vw, 1200px);
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  background: #000;
+  border-radius: 4px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+}
+
+.lightbox__close,
+.lightbox__nav {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
   width: 3rem;
   height: 3rem;
   border: 1px solid var(--border-subtle);
@@ -774,11 +802,40 @@ a:hover {
   line-height: 1;
   cursor: pointer;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.lightbox__close:hover {
+.lightbox__close {
+  top: 1rem;
+  right: 1rem;
+}
+
+.lightbox__nav--prev {
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.lightbox__nav--next {
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.lightbox__close:hover,
+.lightbox__nav:hover {
   background: var(--accent);
   color: var(--bg-deep);
+}
+
+.lightbox__nav[hidden] {
+  display: none;
 }
 
 body.lightbox-open {

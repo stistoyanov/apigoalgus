@@ -7,6 +7,7 @@ use App\Models\SiteMedia;
 use App\Models\SiteSetting;
 use App\Models\UploadedFile;
 use App\Services\SiteContent\SiteContentRepository;
+use App\Services\SiteContent\SiteMediaUrlBuilder;
 use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,7 +30,7 @@ class SiteMediaController extends Controller
         private SiteContentRepository $repository,
     ) {}
 
-    public function index(Site $site): View
+    public function index(Site $site, SiteMediaUrlBuilder $urls): View
     {
         $settings = $this->repository->settingsMap($site);
 
@@ -38,11 +39,18 @@ class SiteMediaController extends Controller
             ->get()
             ->keyBy('purpose');
 
+        $gallery = $site->media()->where('purpose', SiteMedia::PURPOSE_GALLERY)->orderBy('sort_order')->get();
+        $videos = $site->media()->where('purpose', SiteMedia::PURPOSE_VIDEO)->orderBy('sort_order')->get();
+
+        $previewMap = $gallery->merge($videos)->merge($brand->values())
+            ->mapWithKeys(fn (SiteMedia $m) => [$m->id => $urls->signedUrl($site, $m)]);
+
         return view('dashboard.sites.media', [
             'site' => $site,
-            'gallery' => $site->media()->where('purpose', SiteMedia::PURPOSE_GALLERY)->orderBy('sort_order')->get(),
-            'videos' => $site->media()->where('purpose', SiteMedia::PURPOSE_VIDEO)->orderBy('sort_order')->get(),
+            'gallery' => $gallery,
+            'videos' => $videos,
             'brand' => $brand,
+            'previewUrls' => $previewMap,
             'galleryCap' => (int) ($settings['gallery_cap'] ?? 150),
             'videoCap' => (int) ($settings['video_cap'] ?? 10),
             'perFileLimit' => UploadedFile::perFileLimitBytes(),

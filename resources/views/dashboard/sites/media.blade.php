@@ -42,7 +42,7 @@
                 <div class="brand-slot">
                     <div class="brand-slot__preview">
                         @if ($current)
-                            <img src="{{ asset('storage/'.$current->relativePath()) }}" alt="{{ $slot['label'] }}">
+                            <img src="{{ $previewUrls[$current->id] ?? '' }}" alt="{{ $slot['label'] }}">
                         @else
                             <div class="brand-slot__empty">No file</div>
                         @endif
@@ -88,8 +88,9 @@
                             <tr>
                                 <td>{{ $item->sort_order }}</td>
                                 <td>
-                                    <a href="{{ asset('storage/'.$item->relativePath()) }}" target="_blank" rel="noopener" class="media-thumb">
-                                        <img src="{{ asset('storage/'.$item->relativePath()) }}" alt="" loading="lazy">
+                                    @php $thumbUrl = $previewUrls[$item->id] ?? ''; @endphp
+                                    <a href="{{ $thumbUrl }}" target="_blank" rel="noopener" class="media-thumb">
+                                        <img src="{{ $thumbUrl }}" alt="" loading="lazy">
                                     </a>
                                 </td>
                                 <td>{{ $item->original_name }}</td>
@@ -141,7 +142,7 @@
                             <tr>
                                 <td>{{ $item->sort_order }}</td>
                                 <td>
-                                    <video src="{{ asset('storage/'.$item->relativePath()) }}" class="media-thumb media-thumb--video" preload="metadata" muted playsinline></video>
+                                    <video src="{{ $previewUrls[$item->id] ?? '' }}" class="media-thumb media-thumb--video" preload="metadata" muted playsinline></video>
                                 </td>
                                 <td>{{ $item->original_name }}</td>
                                 <td>{{ \App\Models\UploadedFile::formatBytes((int) $item->size_bytes) }}</td>
