@@ -7,6 +7,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\LogViewerController;
 use App\Http\Controllers\PublicFileDownloadController;
 use App\Http\Controllers\SchedulerLogController;
+use App\Http\Controllers\UserActivityController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -65,6 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:super_admin,admin')->group(function () {
         Route::get('/dashboard/users', [UserController::class, 'index'])->name('dashboard.users');
         Route::get('/dashboard/users/roles', [UserController::class, 'roles'])->name('dashboard.users.roles');
+        Route::get('/dashboard/users/activities', [UserActivityController::class, 'index'])->name('dashboard.users.activities');
         Route::post('/dashboard/users', [UserController::class, 'store'])->name('dashboard.users.store');
         Route::put('/dashboard/users/{user}', [UserController::class, 'update'])->name('dashboard.users.update');
         Route::post('/dashboard/users/{user}/toggle', [UserController::class, 'toggleActive'])->name('dashboard.users.toggle');

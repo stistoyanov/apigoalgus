@@ -24,7 +24,7 @@ This rule and the seeder/code MUST be kept in sync. When you change anything bel
 | `manager` | Manager | Oversees teams and content. No system pages yet — currently sees only Overview in the admin dashboard. |
 | `user` | User | Standard authenticated user. Sees only Overview in the dashboard; everything else is system-only. |
 | `viewer` | Viewer | Read-only auditor. Can view scheduler runs and Laravel logs but cannot clear or modify them. |
-| `service_account` | Service Account | Non-human account used by external applications and APIs. **Cannot log in to the dashboard** — rejected in `LoginController`. |
+| `service_account` | Service Account | Non-human account used by external applications and APIs. **Cannot log in to the dashboard** — rejected in `LoginController`. The built-in **System** user (`system@api.goalgus.bg`, defined in `Database\Seeders\SystemUserSeeder::EMAIL`) lives in this role, attributes background work (scheduled commands, queue jobs) in the activity log, cannot be edited / deactivated / deleted, and is hidden from Users and Roles listings. |
 | `operator` | Operator | Operational tasks: scheduler, logs, queues. Can clear logs and schedule-run history. Cannot manage users or system configuration. |
 | `support` | Support | Assists end-users. Currently sees only Overview; future read-only user lookup is planned. |
 
@@ -51,6 +51,8 @@ This rule and the seeder/code MUST be kept in sync. When you change anything bel
 | Users — create | `super_admin` (any role), `admin` (cannot assign `super_admin`) |
 | Users — update / delete / toggle active | `super_admin` (any user), `admin` (no super admin targets) |
 | Roles tab (`/dashboard/users/roles`) | `super_admin` (all roles visible), `admin` (super admin row hidden) |
+| User Actions tab (`/dashboard/users/activities`) | `super_admin` (sees everything), `admin` (super admin activity hidden) |
+| Activity log writes | every authenticated action is recorded server-side; never disabled per role |
 
 The source of truth in code is `App\Support\Access::FEATURES`. Each entry maps a `feature` slug to a list of role slugs.
 
@@ -80,6 +82,7 @@ Always do every step below:
 - Inactive users (`is_active = false`) cannot log in (`LoginController`) and cannot pass `role` middleware.
 - Service accounts cannot log in to the dashboard at all.
 - The master user cannot be demoted from `super_admin`, deactivated, or deleted.
+- The System user (`SystemUserSeeder::EMAIL`) cannot be edited, deactivated, demoted from `service_account`, or deleted, and is hidden from Users / Roles listings. It is intentionally visible as a filter option on the User Actions tab so admins can review system-initiated activity.
 - The currently-authenticated user is never listed in the Users tab and cannot modify themselves there.
 - Admin users cannot see, list, query, or modify super admin users. Enforce in the controller queries, not just in the view.
 - Hiding a UI element is not enough — every protected route MUST have the matching `role` middleware as a backstop.
@@ -93,5 +96,7 @@ Always do every step below:
 | Route guard | `app/Http/Middleware/EnsureRole.php` (alias `role`) |
 | User role helpers | `app/Models/User.php` (`hasAnyRole`, `canAccess`, `isSuperAdmin`, `isMaster`) |
 | Master user definition | `database/seeders/MasterUserSeeder.php` |
+| System user definition | `database/seeders/SystemUserSeeder.php` + sync migration `2025_05_20_140000_seed_system_user.php` |
 | Sync after description change | new migration calling `RolesSeeder::run()` |
 | Files feature (model, controller, public download) | `app/Models/UploadedFile.php`, `app/Http/Controllers/FileController.php`, `app/Http/Controllers/PublicFileDownloadController.php` |
+| User activity logging | `app/Models/UserActivity.php`, `app/Support/ActivityLogger.php`, `app/Http/Controllers/UserActivityController.php` |

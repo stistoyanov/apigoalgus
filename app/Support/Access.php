@@ -37,6 +37,8 @@ class Access
         'files.view' => ['super_admin', 'admin', 'manager', 'user', 'viewer', 'operator', 'support'],
         'files.upload' => ['super_admin', 'admin', 'manager', 'user', 'viewer', 'operator', 'support'],
         'files.manage_all' => ['super_admin', 'admin'],
+
+        'activities.view' => ['super_admin', 'admin'],
     ];
 
     public static function allowed(?User $user, string $feature): bool

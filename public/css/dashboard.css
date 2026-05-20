@@ -1095,6 +1095,46 @@ body.modal-open {
     }
 }
 
+/* ---------- User activity log ---------- */
+
+.activity-context summary {
+    cursor: pointer;
+    color: var(--blue-700, var(--blue-800));
+    font-size: 0.8125rem;
+    font-weight: 600;
+    list-style: none;
+}
+
+.activity-context summary::-webkit-details-marker {
+    display: none;
+}
+
+.activity-context[open] summary::before {
+    content: "▾ ";
+}
+
+.activity-context:not([open]) summary::before {
+    content: "▸ ";
+}
+
+.activity-context pre {
+    margin: 0.4rem 0 0;
+    padding: 0.5rem 0.65rem;
+    background: var(--blue-50);
+    border: 1px solid rgba(37, 99, 199, 0.15);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    max-width: 340px;
+    overflow-x: auto;
+    color: var(--blue-900);
+    font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+.mono {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
 /* ---------- Files page ---------- */
 
 .storage-card .storage-value,

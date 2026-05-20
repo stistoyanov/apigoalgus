@@ -65,4 +65,25 @@ class User extends Authenticatable
     {
         return $this->email === \Database\Seeders\MasterUserSeeder::EMAIL;
     }
+
+    public function isSystem(): bool
+    {
+        return $this->email === \Database\Seeders\SystemUserSeeder::EMAIL;
+    }
+
+    /**
+     * The built-in System user used to attribute background work.
+     * Cached for the request to avoid re-querying on every log entry.
+     */
+    public static function system(): ?self
+    {
+        static $cached = null;
+        if ($cached !== null) {
+            return $cached === false ? null : $cached;
+        }
+
+        $cached = self::query()->where('email', \Database\Seeders\SystemUserSeeder::EMAIL)->first() ?: false;
+
+        return $cached === false ? null : $cached;
+    }
 }

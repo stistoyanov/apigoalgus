@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Support\ActivityLogger;
+use Database\Seeders\SystemUserSeeder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -25,6 +27,7 @@ class UserController extends Controller
         $users = User::query()
             ->with('role')
             ->where('id', '!=', $currentUser->id)
+            ->where('email', '!=', SystemUserSeeder::EMAIL)
             ->unless($canManageSuperAdmins, fn ($q) => $q->where(function ($q) use ($superAdminRoleId) {
                 $q->where('role_id', '!=', $superAdminRoleId)->orWhereNull('role_id');
             }))
@@ -57,10 +60,12 @@ class UserController extends Controller
 
         $query = Role::query()
             ->withCount(['users' => function ($q) use ($currentUserId) {
-                $q->where('id', '!=', $currentUserId);
+                $q->where('id', '!=', $currentUserId)
+                    ->where('email', '!=', SystemUserSeeder::EMAIL);
             }])
             ->with(['users' => function ($q) use ($currentUserId) {
                 $q->where('id', '!=', $currentUserId)
+                    ->where('email', '!=', SystemUserSeeder::EMAIL)
                     ->orderBy('email')
                     ->select('id', 'name', 'email', 'role_id', 'is_active');
             }])
@@ -92,7 +97,7 @@ class UserController extends Controller
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
-        User::query()->create([
+        $created = User::query()->create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
@@ -100,6 +105,18 @@ class UserController extends Controller
             'is_active' => (bool) ($validated['is_active'] ?? true),
             'email_verified_at' => now(),
         ]);
+
+        ActivityLogger::log(
+            action: 'users.created',
+            user: $request->user(),
+            description: 'Created user "'.$created->email.'".',
+            context: [
+                'target_user_id' => $created->id,
+                'target_email' => $created->email,
+                'role_id' => $created->role_id,
+                'is_active' => (bool) $created->is_active,
+            ],
+        );
 
         return redirect()
             ->route('dashboard.users')
@@ -131,6 +148,12 @@ class UserController extends Controller
             }
         }
 
+        $before = [
+            'name' => $user->name,
+            'role_id' => $user->role_id,
+            'is_active' => (bool) $user->is_active,
+        ];
+
         $user->name = $validated['name'];
         $user->role_id = $validated['role_id'];
 
@@ -138,11 +161,37 @@ class UserController extends Controller
             $user->is_active = (bool) ($validated['is_active'] ?? $user->is_active);
         }
 
-        if (! empty($validated['password'])) {
+        $passwordChanged = ! empty($validated['password']);
+
+        if ($passwordChanged) {
             $user->password = $validated['password'];
         }
 
         $user->save();
+
+        $after = [
+            'name' => $user->name,
+            'role_id' => $user->role_id,
+            'is_active' => (bool) $user->is_active,
+        ];
+
+        $changes = array_keys(array_filter($after, fn ($v, $k) => $v !== ($before[$k] ?? null), ARRAY_FILTER_USE_BOTH));
+        if ($passwordChanged) {
+            $changes[] = 'password';
+        }
+
+        ActivityLogger::log(
+            action: 'users.updated',
+            user: $request->user(),
+            description: 'Updated user "'.$user->email.'".',
+            context: [
+                'target_user_id' => $user->id,
+                'target_email' => $user->email,
+                'changed' => $changes,
+                'before' => $before,
+                'after' => $after,
+            ],
+        );
 
         return redirect()
             ->route('dashboard.users', $request->only('role', 'q', 'page'))
@@ -162,6 +211,16 @@ class UserController extends Controller
 
         $label = $user->is_active ? 'activated' : 'deactivated';
 
+        ActivityLogger::log(
+            action: $user->is_active ? 'users.activated' : 'users.deactivated',
+            user: $request->user(),
+            description: ucfirst($label).' user "'.$user->email.'".',
+            context: [
+                'target_user_id' => $user->id,
+                'target_email' => $user->email,
+            ],
+        );
+
         return redirect()
             ->route('dashboard.users', $request->only('role', 'q', 'page'))
             ->with('status', 'User "'.$user->email.'" '.$label.'.');
@@ -176,7 +235,18 @@ class UserController extends Controller
         }
 
         $email = $user->email;
+        $targetId = $user->id;
         $user->delete();
+
+        ActivityLogger::log(
+            action: 'users.deleted',
+            user: $request->user(),
+            description: 'Deleted user "'.$email.'".',
+            context: [
+                'target_user_id' => $targetId,
+                'target_email' => $email,
+            ],
+        );
 
         return redirect()
             ->route('dashboard.users', $request->only('role', 'q'))
@@ -221,6 +291,10 @@ class UserController extends Controller
     {
         if ($request->user()->is($user)) {
             abort(403, 'You cannot modify your own account here.');
+        }
+
+        if ($user->isSystem()) {
+            abort(403, 'The System user is built-in and cannot be modified.');
         }
 
         if ($user->isSuperAdmin() && ! $request->user()->canAccess('users.manage_super_admins')) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use App\Models\UploadedFile;
 use App\Models\User;
+use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -100,13 +101,24 @@ class FileController extends Controller
 
             $file->storeAs('files/'.$userId, $storedName, self::DISK);
 
-            UploadedFile::query()->create([
+            $record = UploadedFile::query()->create([
                 'user_id' => $userId,
                 'original_name' => mb_substr($file->getClientOriginalName(), 0, 255),
                 'stored_name' => $storedName,
                 'mime_type' => $file->getMimeType(),
                 'size_bytes' => $file->getSize(),
             ]);
+
+            ActivityLogger::log(
+                action: 'files.uploaded',
+                user: $request->user(),
+                description: 'Uploaded "'.$record->original_name.'".',
+                context: [
+                    'file_id' => $record->id,
+                    'size_bytes' => (int) $record->size_bytes,
+                    'mime_type' => $record->mime_type,
+                ],
+            );
 
             $uploaded++;
         }
@@ -124,6 +136,17 @@ class FileController extends Controller
             abort(404, 'File missing on disk.');
         }
 
+        ActivityLogger::log(
+            action: 'files.downloaded',
+            user: $request->user(),
+            description: 'Downloaded "'.$file->original_name.'".',
+            context: [
+                'file_id' => $file->id,
+                'owner_id' => $file->user_id,
+                'size_bytes' => (int) $file->size_bytes,
+            ],
+        );
+
         return $disk->download($file->relativePath(), $file->original_name);
     }
 
@@ -138,6 +161,13 @@ class FileController extends Controller
 
             $file->share_token = $token;
             $file->save();
+
+            ActivityLogger::log(
+                action: 'files.shared',
+                user: $request->user(),
+                description: 'Created share link for "'.$file->original_name.'".',
+                context: ['file_id' => $file->id],
+            );
         }
 
         return back()->with('status', 'Share link for "'.$file->original_name.'" is now active.');
@@ -150,6 +180,13 @@ class FileController extends Controller
         $file->share_token = null;
         $file->save();
 
+        ActivityLogger::log(
+            action: 'files.unshared',
+            user: $request->user(),
+            description: 'Revoked share link for "'.$file->original_name.'".',
+            context: ['file_id' => $file->id],
+        );
+
         return back()->with('status', 'Share link for "'.$file->original_name.'" revoked.');
     }
 
@@ -160,7 +197,21 @@ class FileController extends Controller
         Storage::disk(self::DISK)->delete($file->relativePath());
 
         $name = $file->original_name;
+        $ownerId = $file->user_id;
+        $size = (int) $file->size_bytes;
+        $fileId = $file->id;
         $file->delete();
+
+        ActivityLogger::log(
+            action: 'files.deleted',
+            user: $request->user(),
+            description: 'Deleted "'.$name.'".',
+            context: [
+                'file_id' => $fileId,
+                'owner_id' => $ownerId,
+                'size_bytes' => $size,
+            ],
+        );
 
         return back()->with('status', 'File "'.$name.'" deleted.');
     }
