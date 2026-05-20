@@ -20,7 +20,7 @@
                     <option value="">All users</option>
                     @foreach ($usersForFilter as $u)
                         <option value="{{ $u->id }}" @selected($userFilter === $u->id)>
-                            {{ $u->name }}@if ($u->isSystem()) — System account@endif ({{ $u->email }})
+                            {{ $u->name }}{{ $u->isSystem() ? ' — System account' : '' }} ({{ $u->email }})
                         </option>
                     @endforeach
                 </select>
@@ -69,7 +69,9 @@
                                     @if ($activity->user)
                                         <strong>
                                             {{ $activity->user->name }}
-                                            @if ($activity->user->isSystem()) <span class="badge badge-success">system</span>@endif
+                                            @if ($activity->user->isSystem())
+                                                <span class="badge badge-success">system</span>
+                                            @endif
                                         </strong>
                                         <div class="muted small">{{ $activity->user->email }}</div>
                                     @elseif ($activity->email)
