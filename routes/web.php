@@ -3,7 +3,9 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmailTestController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\LogViewerController;
+use App\Http\Controllers\PublicFileDownloadController;
 use App\Http\Controllers\SchedulerLogController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -11,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Public token-based file download (no auth — anyone with the link).
+Route::get('/files/d/{token}', [PublicFileDownloadController::class, 'show'])->name('files.public_download');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
@@ -44,6 +49,16 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:super_admin,admin')->group(function () {
         Route::get('/dashboard/email', [EmailTestController::class, 'show'])->name('dashboard.email');
         Route::post('/dashboard/email', [EmailTestController::class, 'send'])->name('dashboard.email.send')->middleware('throttle:5,1');
+    });
+
+    // Files: all login roles (upload, view own, share own). Admins also see/delete others' files.
+    Route::middleware('role:super_admin,admin,manager,user,viewer,operator,support')->group(function () {
+        Route::get('/dashboard/files', [FileController::class, 'index'])->name('dashboard.files');
+        Route::post('/dashboard/files', [FileController::class, 'store'])->name('dashboard.files.store');
+        Route::get('/dashboard/files/{file}/download', [FileController::class, 'download'])->name('dashboard.files.download');
+        Route::post('/dashboard/files/{file}/share', [FileController::class, 'share'])->name('dashboard.files.share');
+        Route::post('/dashboard/files/{file}/unshare', [FileController::class, 'unshare'])->name('dashboard.files.unshare');
+        Route::post('/dashboard/files/{file}/delete', [FileController::class, 'destroy'])->name('dashboard.files.destroy');
     });
 
     // Users: super_admin, admin (admin cannot touch super admin users; enforced in UserController)

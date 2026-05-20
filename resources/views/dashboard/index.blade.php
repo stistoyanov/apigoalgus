@@ -42,6 +42,7 @@
 
         @php
             $links = collect([
+                ['feature' => 'files.view', 'route' => 'dashboard.files', 'label' => 'Files', 'desc' => 'Upload files and share download links with other users.'],
                 ['feature' => 'scheduler.view', 'route' => 'dashboard.scheduler', 'label' => 'Scheduler', 'desc' => 'Inspect scheduled command runs.'],
                 ['feature' => 'logs.view', 'route' => 'dashboard.logs', 'label' => 'Logs', 'desc' => 'Browse Laravel log files.'],
                 ['feature' => 'email_test', 'route' => 'dashboard.email', 'label' => 'Email test', 'desc' => 'Send a test message through the configured mailer.'],

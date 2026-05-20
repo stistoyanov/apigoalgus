@@ -35,6 +35,13 @@ This rule and the seeder/code MUST be kept in sync. When you change anything bel
 | Login to dashboard | all except `service_account` |
 | Overview (`/dashboard`) | every role that can log in |
 | Overview heartbeat stats | `super_admin`, `admin`, `viewer`, `operator` |
+| Files — view own (`/dashboard/files`) | every role that can log in |
+| Files — upload | every role that can log in |
+| Files — share / revoke own download link | file owner only |
+| Files — download own | file owner |
+| Files — view / download / delete others' files | `super_admin` (any), `admin` (no super admin owners) |
+| Files — public download (`/files/d/{token}`) | anyone with the link (no auth) |
+| Files — total storage cap | hard 100 GB across all uploads (enforced server-side) |
 | Scheduler — view (`/dashboard/scheduler`) | `super_admin`, `admin`, `viewer`, `operator` |
 | Scheduler — clear all | `super_admin`, `admin`, `operator` |
 | Logs — view (`/dashboard/logs`) | `super_admin`, `admin`, `viewer`, `operator` |
@@ -87,3 +94,4 @@ Always do every step below:
 | User role helpers | `app/Models/User.php` (`hasAnyRole`, `canAccess`, `isSuperAdmin`, `isMaster`) |
 | Master user definition | `database/seeders/MasterUserSeeder.php` |
 | Sync after description change | new migration calling `RolesSeeder::run()` |
+| Files feature (model, controller, public download) | `app/Models/UploadedFile.php`, `app/Http/Controllers/FileController.php`, `app/Http/Controllers/PublicFileDownloadController.php` |

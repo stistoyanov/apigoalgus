@@ -33,6 +33,9 @@
             <nav aria-label="Dashboard">
                 @php $u = auth()->user(); @endphp
                 <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') && ! request()->routeIs('dashboard.*') ? 'is-active' : '' }}">Overview</a>
+                @if (\App\Support\Access::allowed($u, 'files.view'))
+                    <a href="{{ route('dashboard.files') }}" class="{{ request()->routeIs('dashboard.files*') ? 'is-active' : '' }}">Files</a>
+                @endif
                 @if (\App\Support\Access::allowed($u, 'scheduler.view'))
                     <a href="{{ route('dashboard.scheduler') }}" class="{{ request()->routeIs('dashboard.scheduler*') ? 'is-active' : '' }}">Scheduler</a>
                 @endif

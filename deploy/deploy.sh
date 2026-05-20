@@ -75,9 +75,11 @@ rsync "${RSYNC_FLAGS[@]}" --delete \
     --exclude='.env.live' \
     --exclude='.env.backup' \
     --exclude='.env.production' \
-    --exclude='vendor/' \
+    --exclude='/vendor/' \
     --exclude='node_modules/' \
     --exclude='storage/logs/' \
+    --exclude='storage/app/private/files/' \
+    --exclude='storage/app/public/' \
     --exclude='storage/framework/cache/data/' \
     --exclude='storage/framework/sessions/' \
     --exclude='storage/framework/views/' \

@@ -33,6 +33,10 @@ class Access
         'users.view' => ['super_admin', 'admin'],
         'users.manage' => ['super_admin', 'admin'],
         'users.manage_super_admins' => ['super_admin'],
+
+        'files.view' => ['super_admin', 'admin', 'manager', 'user', 'viewer', 'operator', 'support'],
+        'files.upload' => ['super_admin', 'admin', 'manager', 'user', 'viewer', 'operator', 'support'],
+        'files.manage_all' => ['super_admin', 'admin'],
     ];
 
     public static function allowed(?User $user, string $feature): bool
