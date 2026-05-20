@@ -81,12 +81,17 @@
             <div class="table-scroll">
                 <table class="data-table">
                     <thead>
-                        <tr><th>#</th><th>Name</th><th>Size</th><th>Alt (BG)</th><th>Alt (EN)</th><th class="col-actions">Actions</th></tr>
+                        <tr><th>#</th><th>Preview</th><th>Name</th><th>Size</th><th>Alt (BG)</th><th>Alt (EN)</th><th class="col-actions">Actions</th></tr>
                     </thead>
                     <tbody>
                         @foreach ($gallery as $item)
                             <tr>
                                 <td>{{ $item->sort_order }}</td>
+                                <td>
+                                    <a href="{{ asset('storage/'.$item->relativePath()) }}" target="_blank" rel="noopener" class="media-thumb">
+                                        <img src="{{ asset('storage/'.$item->relativePath()) }}" alt="" loading="lazy">
+                                    </a>
+                                </td>
                                 <td>{{ $item->original_name }}</td>
                                 <td>{{ \App\Models\UploadedFile::formatBytes((int) $item->size_bytes) }}</td>
                                 <td>{{ $item->alt_text_bg }}</td>
@@ -129,12 +134,15 @@
             <div class="table-scroll">
                 <table class="data-table">
                     <thead>
-                        <tr><th>#</th><th>Name</th><th>Size</th><th>Featured</th><th class="col-actions">Actions</th></tr>
+                        <tr><th>#</th><th>Preview</th><th>Name</th><th>Size</th><th>Featured</th><th class="col-actions">Actions</th></tr>
                     </thead>
                     <tbody>
                         @foreach ($videos as $item)
                             <tr>
                                 <td>{{ $item->sort_order }}</td>
+                                <td>
+                                    <video src="{{ asset('storage/'.$item->relativePath()) }}" class="media-thumb media-thumb--video" preload="metadata" muted playsinline></video>
+                                </td>
                                 <td>{{ $item->original_name }}</td>
                                 <td>{{ \App\Models\UploadedFile::formatBytes((int) $item->size_bytes) }}</td>
                                 <td>{{ $item->is_featured ? 'Yes' : 'No' }}</td>
