@@ -36,6 +36,9 @@
                 @if (\App\Support\Access::allowed($u, 'files.view'))
                     <a href="{{ route('dashboard.files') }}" class="{{ request()->routeIs('dashboard.files*') ? 'is-active' : '' }}">Files</a>
                 @endif
+                @if (\App\Support\Access::allowed($u, 'sites.view'))
+                    <a href="{{ route('dashboard.sites') }}" class="{{ request()->routeIs('dashboard.sites*') ? 'is-active' : '' }}">Sites</a>
+                @endif
                 @if (\App\Support\Access::allowed($u, 'scheduler.view'))
                     <a href="{{ route('dashboard.scheduler') }}" class="{{ request()->routeIs('dashboard.scheduler*') ? 'is-active' : '' }}">Scheduler</a>
                 @endif

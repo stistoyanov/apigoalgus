@@ -7,8 +7,14 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\LogViewerController;
 use App\Http\Controllers\PublicFileDownloadController;
 use App\Http\Controllers\SchedulerLogController;
+use App\Http\Controllers\SiteContentController;
+use App\Http\Controllers\SiteController;
+use App\Http\Controllers\SiteMediaController;
+use App\Http\Controllers\SiteSettingsController;
+use App\Http\Controllers\SiteTokenController;
 use App\Http\Controllers\UserActivityController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Api\MediaSignedController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -17,6 +23,9 @@ Route::get('/', function () {
 
 // Public token-based file download (no auth — anyone with the link).
 Route::get('/files/d/{token}', [PublicFileDownloadController::class, 'show'])->name('files.public_download');
+
+// Signed site media URLs (no Bearer token — signature validates access).
+Route::get('/sites/{site:slug}/m/{media}', [MediaSignedController::class, 'show'])->name('sites.media');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
@@ -71,5 +80,22 @@ Route::middleware('auth')->group(function () {
         Route::put('/dashboard/users/{user}', [UserController::class, 'update'])->name('dashboard.users.update');
         Route::post('/dashboard/users/{user}/toggle', [UserController::class, 'toggleActive'])->name('dashboard.users.toggle');
         Route::post('/dashboard/users/{user}/delete', [UserController::class, 'destroy'])->name('dashboard.users.destroy');
+    });
+
+    // Sites: super_admin, admin
+    Route::middleware('role:super_admin,admin')->group(function () {
+        Route::get('/dashboard/sites', [SiteController::class, 'index'])->name('dashboard.sites');
+        Route::get('/dashboard/sites/{site:slug}', [SiteController::class, 'show'])->name('dashboard.sites.show');
+        Route::get('/dashboard/sites/{site:slug}/content', [SiteContentController::class, 'edit'])->name('dashboard.sites.content');
+        Route::post('/dashboard/sites/{site:slug}/content', [SiteContentController::class, 'update'])->name('dashboard.sites.content.save');
+        Route::get('/dashboard/sites/{site:slug}/settings', [SiteSettingsController::class, 'edit'])->name('dashboard.sites.settings');
+        Route::post('/dashboard/sites/{site:slug}/settings', [SiteSettingsController::class, 'update'])->name('dashboard.sites.settings.save');
+        Route::get('/dashboard/sites/{site:slug}/media', [SiteMediaController::class, 'index'])->name('dashboard.sites.media');
+        Route::post('/dashboard/sites/{site:slug}/media', [SiteMediaController::class, 'store'])->name('dashboard.sites.media.upload');
+        Route::post('/dashboard/sites/{site:slug}/media/{media}/delete', [SiteMediaController::class, 'destroy'])->name('dashboard.sites.media.destroy');
+        Route::post('/dashboard/sites/{site:slug}/media/{media}/move', [SiteMediaController::class, 'move'])->name('dashboard.sites.media.move');
+        Route::get('/dashboard/sites/{site:slug}/tokens', [SiteTokenController::class, 'index'])->name('dashboard.sites.tokens');
+        Route::post('/dashboard/sites/{site:slug}/tokens', [SiteTokenController::class, 'store'])->name('dashboard.sites.tokens.store');
+        Route::post('/dashboard/sites/{site:slug}/tokens/{token}/revoke', [SiteTokenController::class, 'revoke'])->name('dashboard.sites.tokens.revoke');
     });
 });

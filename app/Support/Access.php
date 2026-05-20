@@ -39,6 +39,9 @@ class Access
         'files.manage_all' => ['super_admin', 'admin'],
 
         'activities.view' => ['super_admin', 'admin'],
+
+        'sites.view' => ['super_admin', 'admin'],
+        'sites.manage' => ['super_admin', 'admin'],
     ];
 
     public static function allowed(?User $user, string $feature): bool

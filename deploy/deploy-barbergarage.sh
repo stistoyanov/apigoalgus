@@ -74,6 +74,10 @@ rsync "${RSYNC_FLAGS[@]}" --delete \
     -e "ssh ${SSH_OPTS[*]}" \
     --exclude='.DS_Store' \
     --exclude='._*' \
+    --exclude='config.php' \
+    --exclude='cache/*' \
+    --exclude='!cache/.gitignore' \
+    --exclude='!cache/.htaccess' \
     "${SOURCE_DIR}/" \
     "${RSYNC_TARGET}"
 

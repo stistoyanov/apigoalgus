@@ -80,6 +80,7 @@ rsync "${RSYNC_FLAGS[@]}" --delete \
     --exclude='storage/logs/' \
     --exclude='storage/app/private/files/' \
     --exclude='storage/app/public/' \
+    --exclude='storage/app/public/sites/' \
     --exclude='storage/framework/cache/data/' \
     --exclude='storage/framework/sessions/' \
     --exclude='storage/framework/views/' \

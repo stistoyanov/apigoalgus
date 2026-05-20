@@ -77,74 +77,13 @@
     parallaxTick();
   }
 
-  var GALLERY_FIRST_EAGER = 10;
-
-  /* gallery.json uses paths like images/...; on /en/ relative URLs would wrongly become /en/images/... */
-  function siteRootPath(p) {
-    if (!p) return p;
-    if (/^(https?:|data:|\/\/)/i.test(p)) return p;
-    if (p.charAt(0) === "/") return p;
-    var base = document.body.getAttribute("data-site-base");
-    if (base != null && base !== "" && base !== "/") {
-      return base.replace(/\/?$/, "/") + p.replace(/^\//, "");
-    }
-    return "/" + p;
-  }
-
-  /* Gallery from gallery.json — horizontal scroller, ~10 visible on large viewports */
-  function buildGallery(images) {
-    if (!galleryRoot || !images || !images.length) return;
-
-    var lang = (document.documentElement.getAttribute("lang") || "bg").toLowerCase();
-    var labelPrefix = lang.indexOf("en") === 0 ? "Photo " : "Снимка ";
-
-    var hint = document.getElementById("gallery-scroll-hint");
-    if (hint) {
-      if (images.length > GALLERY_FIRST_EAGER) {
-        hint.removeAttribute("hidden");
-        galleryRoot.setAttribute("aria-describedby", "gallery-scroll-hint");
-      } else {
-        hint.setAttribute("hidden", "");
-        galleryRoot.removeAttribute("aria-describedby");
-      }
-    }
-
-    images.forEach(function (src, i) {
-      var abs = siteRootPath(src);
-      var btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "gallery__item";
-      btn.setAttribute("aria-label", labelPrefix + (i + 1));
-      var img = document.createElement("img");
-      img.src = abs;
-      img.alt = "";
-      img.loading = i < GALLERY_FIRST_EAGER ? "eager" : "lazy";
-      img.decoding = "async";
-      btn.appendChild(img);
-      btn.addEventListener("click", function () {
-        openLightbox(abs);
-      });
-      galleryRoot.appendChild(btn);
-    });
-
-    galleryRoot.addEventListener("keydown", function (e) {
-      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-      var w = galleryRoot.clientWidth;
-      if (!w) return;
-      e.preventDefault();
-      galleryRoot.scrollBy({
-        left: e.key === "ArrowLeft" ? -w * 0.35 : w * 0.35,
-        behavior: reducedMotion ? "auto" : "smooth"
-      });
-    });
-  }
-
-  function openLightbox(src) {
+  /* Lightbox — gallery buttons are rendered server-side; we only handle interaction. */
+  function openLightbox(src, alt) {
     var lb = document.getElementById("lightbox");
     var lbImg = document.getElementById("lightbox-img");
-    if (!lb || !lbImg) return;
-    lbImg.src = siteRootPath(src);
-    lbImg.alt = "";
+    if (!lb || !lbImg || !src) return;
+    lbImg.src = src;
+    lbImg.alt = alt || "";
     lb.classList.add("is-open");
     lb.setAttribute("aria-hidden", "false");
     document.body.classList.add("lightbox-open");
@@ -160,6 +99,27 @@
     if (lbImg) lbImg.removeAttribute("src");
   }
 
+  if (galleryRoot) {
+    galleryRoot.addEventListener("click", function (e) {
+      var btn = e.target.closest(".gallery__item");
+      if (!btn || !galleryRoot.contains(btn)) return;
+      var full = btn.getAttribute("data-full");
+      var img = btn.querySelector("img");
+      openLightbox(full, img ? img.getAttribute("alt") : "");
+    });
+
+    galleryRoot.addEventListener("keydown", function (e) {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      var w = galleryRoot.clientWidth;
+      if (!w) return;
+      e.preventDefault();
+      galleryRoot.scrollBy({
+        left: e.key === "ArrowLeft" ? -w * 0.35 : w * 0.35,
+        behavior: reducedMotion ? "auto" : "smooth"
+      });
+    });
+  }
+
   var lbClose = document.querySelector(".lightbox__close");
   var lightbox = document.getElementById("lightbox");
   if (lbClose) lbClose.addEventListener("click", closeLightbox);
@@ -171,24 +131,4 @@
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") closeLightbox();
   });
-
-  var galleryUrl = document.body.getAttribute("data-gallery") || "gallery.json";
-  fetch(galleryUrl)
-    .then(function (r) {
-      if (!r.ok) throw new Error("gallery");
-      return r.json();
-    })
-    .then(function (data) {
-      buildGallery(data.images || []);
-    })
-    .catch(function () {
-      if (galleryRoot) {
-        galleryRoot.innerHTML =
-          '<p class="section__subtitle">' +
-          (document.documentElement.lang && document.documentElement.lang.indexOf("en") === 0
-            ? "Gallery could not load. Check the path to gallery.json."
-            : "Галерията не може да се зареди. Проверете пътя към gallery.json.") +
-          "</p>";
-      }
-    });
 })();

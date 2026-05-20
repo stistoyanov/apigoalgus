@@ -42,6 +42,10 @@ This rule and the seeder/code MUST be kept in sync. When you change anything bel
 | Files — view / download / delete others' files | `super_admin` (any), `admin` (no super admin owners) |
 | Files — public download (`/files/d/{token}`) | anyone with the link (no auth) |
 | Files — total storage cap | hard 100 GB across all uploads (enforced server-side) |
+| Sites — view (`/dashboard/sites`) | `super_admin`, `admin` |
+| Sites — edit content / settings / media / tokens | `super_admin`, `admin` |
+| Sites — public signed media (`/sites/{slug}/m/{id}`) | anyone with valid signed URL (no auth) |
+| Sites — API content (`/api/v1/site/content`) | valid Bearer token in `site_tokens` (no dashboard login) |
 | Scheduler — view (`/dashboard/scheduler`) | `super_admin`, `admin`, `viewer`, `operator` |
 | Scheduler — clear all | `super_admin`, `admin`, `operator` |
 | Logs — view (`/dashboard/logs`) | `super_admin`, `admin`, `viewer`, `operator` |
@@ -100,3 +104,4 @@ Always do every step below:
 | Sync after description change | new migration calling `RolesSeeder::run()` |
 | Files feature (model, controller, public download) | `app/Models/UploadedFile.php`, `app/Http/Controllers/FileController.php`, `app/Http/Controllers/PublicFileDownloadController.php` |
 | User activity logging | `app/Models/UserActivity.php`, `app/Support/ActivityLogger.php`, `app/Http/Controllers/UserActivityController.php` |
+| Sites CMS & API | See `.cursor/rules/aa-barbergarage-rule.mdc` — `app/Models/Site*.php`, `app/Services/SiteContent/*`, `app/Http/Controllers/Site*.php`, `routes/api.php` |

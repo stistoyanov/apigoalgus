@@ -57,6 +57,16 @@ class UserActivity extends Model
             'users.activated' => 'User activated',
             'users.deactivated' => 'User deactivated',
             'users.deleted' => 'User deleted',
+            'sites.content.updated' => 'Site content updated',
+            'sites.settings.updated' => 'Site settings updated',
+            'sites.media.uploaded' => 'Site media uploaded',
+            'sites.media.deleted' => 'Site media deleted',
+            'sites.media.reordered' => 'Site media reordered',
+            'sites.token.created' => 'Site API token created',
+            'sites.token.revoked' => 'Site API token revoked',
+            'api.site.content.fetched' => 'Site API content fetched',
+            'api.site.auth_failed' => 'Site API auth failed',
+            'api.site.media.fetched' => 'Site media fetched (signed URL)',
         ];
     }
 

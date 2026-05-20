@@ -1,0 +1,123 @@
+---
+alwaysApply: true
+---
+
+# BarberGarage CMS & API
+
+BarberGarage (`barbergarage.bg`) is a client site whose **content source of truth** lives in apigoalgus (`api.goalgus.bg`). The static folder `barbergarage/` is the layout shell; Phase 2 will fetch JSON from the API server-side. Do not edit static HTML for copy that belongs in the CMS.
+
+## Architecture
+
+- **Content & settings** → `site_contents`, `site_settings` tables; edited in `/dashboard/sites/barbergarage`.
+- **Media** → `storage/app/public/sites/barbergarage/{images|videos}/` on the `public` disk; served via **HMAC signed URLs** (`/sites/barbergarage/m/{id}?signature=...`), not via Bearer token in the browser.
+- **API** → `GET /api/v1/site/content` or `/api/v1/site/content/{locale}` with `Authorization: Bearer <token>`. Token is for BarberGarage **server-side** fetch only — never expose in client JS.
+- **Human owner** → `todor@barbergarage.bg` (`TodorUserSeeder`, role `admin`).
+
+## Static frontend (Phase 2 — live)
+
+The `barbergarage/` folder is a thin PHP shell that fetches JSON from the API server-side and renders the HTML.
+
+| File | Purpose |
+|------|---------|
+| `barbergarage/index.php` | BG entry point — calls `bg_load_content('bg')` and renders the shared template |
+| `barbergarage/en/index.php` | EN entry point — calls `bg_load_content('en')` and renders the shared template |
+| `barbergarage/lib/api-client.php` | Reads `config.php`, fetches `/api/v1/site/content/{locale}` with Bearer token, caches in `barbergarage/cache/site-{locale}.json` for `cache_ttl` seconds; falls back to stale cache on API failure |
+| `barbergarage/lib/render.php` | Escape + content/setting/media helpers used by the template |
+| `barbergarage/lib/template.php` | Single HTML template shared by both locales (no duplication) |
+| `barbergarage/config.sample.php` | Committed template: `api_base`, `api_token`, `cache_ttl`, `maps_api_key` |
+| `barbergarage/config.php` | **Gitignored** real config; copy from sample and fill in the raw Bearer token |
+| `barbergarage/cache/` | File cache + `.htaccess` deny-all + `.gitignore` (folder kept, contents ignored) |
+| `barbergarage/.htaccess` | `DirectoryIndex index.php index.html`, denies access to `config*.php` and `/lib/` |
+| `barbergarage/js/site.js` | Nav, parallax, lightbox — gallery DOM is server-rendered, JS only wires interactions |
+
+Conventions:
+
+- **Token is server-only.** Never expose `api_token` in client JS or HTML output.
+- **Stale-while-error.** If the API is unreachable, the PHP shell keeps serving the last cached JSON, regardless of age. Total outages only happen on first load before any cache exists.
+- **Maps key stays on the BarberGarage side** (`config.php`), restricted by HTTP referrer in Google Cloud Console. The dashboard owns lat/lng/zoom; the BarberGarage shell composes the embed URL.
+- **Hero background + logo + favicon** still load from `barbergarage/images/website/` static files. The dashboard `logo`/`favicon`/`hero_bg` media rows exist for future Phase 3 work but are not consumed by the PHP shell yet.
+- **Deploy:** `deploy/deploy-barbergarage.sh` rsync excludes `config.php` and `cache/*` so production secrets and cache survive across deploys.
+- **First production deploy:** SSH in, `cp config.sample.php config.php`, edit and paste the raw token from the dashboard. The cache directory must be writable by the PHP user.
+
+## Database tables
+
+| Table | Purpose |
+|-------|---------|
+| `sites` | One row per managed site (`slug`: `barbergarage`) |
+| `site_tokens` | Hashed API tokens; raw shown once on create |
+| `site_settings` | JSON key/value: contact, map, hours, caps, social URLs |
+| `site_contents` | Localized copy: `locale` (`bg`/`en`), `section`, `field`, `value` |
+| `site_media` | Images/videos with `purpose`, `sort_order`, alt text BG/EN |
+
+No foreign keys — indexed `site_id` columns only (shared-hosting pattern).
+
+## Locales & sections
+
+- **Default locale:** `bg`. Always maintain **both** `bg` and `en` when adding fields.
+- **Sections:** `hero`, `welcome`, `about`, `gallery`, `video`, `hours`, `map`, `nav`, `footer`, `meta`.
+
+## Media limits
+
+- Gallery cap default **150** (`site_settings.gallery_cap`).
+- Video cap default **10** (`site_settings.video_cap`).
+
+## Access control
+
+- Dashboard Sites pages: `sites.view` / `sites.manage` → `super_admin`, `admin` only.
+- See `aa-user-roles-rule.mdc` access matrix for full list.
+- Route middleware: `role:super_admin,admin` on all `/dashboard/sites/*` routes.
+- API routes: `api.site` middleware (`EnsureSiteToken`).
+
+## Key files
+
+| Concern | File |
+|---------|------|
+| Models | `app/Models/Site.php`, `SiteToken.php`, `SiteSetting.php`, `SiteContent.php`, `SiteMedia.php` |
+| Repository (API + dashboard) | `app/Services/SiteContent/SiteContentRepository.php` |
+| Signed URL builder | `app/Services/SiteContent/SiteMediaUrlBuilder.php` |
+| API controller | `app/Http/Controllers/Api/SiteContentApiController.php` |
+| Signed media | `app/Http/Controllers/Api/MediaSignedController.php` |
+| Token middleware | `app/Http/Middleware/EnsureSiteToken.php` |
+| Dashboard controllers | `app/Http/Controllers/Site*.php` |
+| Seed content + media | `database/seeders/BarbergarageSeeder.php` |
+| Todor user | `database/seeders/TodorUserSeeder.php` |
+| Access map | `app/Support/Access.php` (`sites.view`, `sites.manage`) |
+| Activity labels | `app/Models/UserActivity.php` (`sites.*`, `api.site.*`) |
+| API routes | `routes/api.php` |
+| Deploy media preserve | `deploy/deploy.sh` excludes `storage/app/public/sites/` |
+
+## Activity log actions
+
+```
+sites.content.updated · sites.settings.updated · sites.media.uploaded ·
+sites.media.deleted · sites.media.reordered · sites.token.created · sites.token.revoked ·
+api.site.content.fetched · api.site.auth_failed · api.site.media.fetched
+```
+
+Web mutations → `ActivityLogger::log()`. API/system events → `ActivityLogger::system()`.
+
+## Token rotation
+
+1. Create new token in dashboard (or reveal/copy an existing one).
+2. Update BarberGarage server config with new token.
+3. Revoke old token.
+
+Storage:
+
+- `site_tokens.token_hash` — SHA-256 of the raw token; used by `EnsureSiteToken` for lookup.
+- `site_tokens.token_encrypted` — Laravel `encrypted` cast over the raw token; lets admins reveal/copy the token from the UI later. Field is hidden from default model serialization and is **never** included in API responses.
+- `site_tokens.prefix` — first 8 chars; safe to display.
+
+If `APP_KEY` is rotated, existing `token_encrypted` values become unreadable — recreate tokens after a key rotation.
+
+## Deploy notes
+
+- `deploy/deploy.sh` excludes `storage/app/public/sites/` so seeded media on production is not wiped.
+- First production deploy: run migrations; seeder copies media from `barbergarage/` if present on server.
+- Static BarberGarage deploy remains separate: `make deploy-barbergarage`.
+
+## Conventions
+
+- Reuse existing patterns: `Access`, `ActivityLogger`, `EnsureRole`, file-upload UX from Files page.
+- Do not introduce a new auth scheme for Sites.
+- When adding site features, update `Access::FEATURES`, route middleware, sidebar gate, and both cursor rules.
