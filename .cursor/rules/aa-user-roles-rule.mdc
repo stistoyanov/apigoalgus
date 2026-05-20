@@ -1,0 +1,89 @@
+---
+alwaysApply: true
+---
+
+# User roles and access control
+
+This project uses **8 fixed roles**. Roles cannot be created, deleted, or renamed at runtime; they live in `database/seeders/RolesSeeder.php`.
+
+Every user has **exactly one role** (`users.role_id`) and an `is_active` flag (`users.is_active`).
+
+This rule and the seeder/code MUST be kept in sync. When you change anything below, update all three:
+
+1. This file (descriptions + access matrix).
+2. `database/seeders/RolesSeeder.php` (descriptions only).
+3. `app/Support/Access.php` (the `FEATURES` map for behaviour).
+4. Create a new sync migration named `YYYY_MM_DD_HHMMSS_sync_role_descriptions.php` (or similar) that calls `(new RolesSeeder)->run()`. The seeder is idempotent (`updateOrCreate` keyed on `slug`).
+
+## Roles
+
+| Slug | Name | Scope |
+|------|------|-------|
+| `super_admin` | Super Admin | Full unrestricted access to the entire system. Only super admins can create, edit, deactivate, or delete other super admins, and only super admins can promote a user to super admin. The master user (`stistoyanov@yahoo.com`, defined in `Database\Seeders\MasterUserSeeder::EMAIL`) cannot be demoted, deactivated, or deleted. |
+| `admin` | Admin | Full admin dashboard access for day-to-day operations. Cannot see, create, edit, deactivate, or delete super admin users. Cannot promote anyone to super admin. |
+| `manager` | Manager | Oversees teams and content. No system pages yet — currently sees only Overview in the admin dashboard. |
+| `user` | User | Standard authenticated user. Sees only Overview in the dashboard; everything else is system-only. |
+| `viewer` | Viewer | Read-only auditor. Can view scheduler runs and Laravel logs but cannot clear or modify them. |
+| `service_account` | Service Account | Non-human account used by external applications and APIs. **Cannot log in to the dashboard** — rejected in `LoginController`. |
+| `operator` | Operator | Operational tasks: scheduler, logs, queues. Can clear logs and schedule-run history. Cannot manage users or system configuration. |
+| `support` | Support | Assists end-users. Currently sees only Overview; future read-only user lookup is planned. |
+
+## Access matrix
+
+| Page / Action | Allowed roles |
+|---------------|---------------|
+| Login to dashboard | all except `service_account` |
+| Overview (`/dashboard`) | every role that can log in |
+| Overview heartbeat stats | `super_admin`, `admin`, `viewer`, `operator` |
+| Scheduler — view (`/dashboard/scheduler`) | `super_admin`, `admin`, `viewer`, `operator` |
+| Scheduler — clear all | `super_admin`, `admin`, `operator` |
+| Logs — view (`/dashboard/logs`) | `super_admin`, `admin`, `viewer`, `operator` |
+| Logs — clear file | `super_admin`, `admin`, `operator` |
+| Email test (`/dashboard/email`) | `super_admin`, `admin` |
+| Users — view (`/dashboard/users`) | `super_admin` (sees all), `admin` (super admins hidden) |
+| Users — create | `super_admin` (any role), `admin` (cannot assign `super_admin`) |
+| Users — update / delete / toggle active | `super_admin` (any user), `admin` (no super admin targets) |
+| Roles tab (`/dashboard/users/roles`) | `super_admin` (all roles visible), `admin` (super admin row hidden) |
+
+The source of truth in code is `App\Support\Access::FEATURES`. Each entry maps a `feature` slug to a list of role slugs.
+
+## When you add a new feature
+
+Always do every step below:
+
+1. **Decide which roles get access** before writing code, and state it in your PR/commit message.
+2. Add a new entry to `App\Support\Access::FEATURES` keyed by a stable feature slug (e.g. `'reports.view' => ['super_admin', 'admin']`).
+3. Protect every route with the `role` middleware using the same role list:
+   ```php
+   Route::get('/dashboard/reports', ...)->middleware('role:super_admin,admin');
+   ```
+4. Gate the sidebar/menu link with the `Access` helper:
+   ```blade
+   @if (App\Support\Access::allowed(auth()->user(), 'reports.view'))
+       <a href="{{ route('dashboard.reports') }}">Reports</a>
+   @endif
+   ```
+5. If the feature shows lists of users, mirror the `UserController` filtering pattern: when the current user is not a super admin, exclude super-admin records from queries and disallow actions on them.
+6. Add a new row to the **Access matrix** in this file.
+7. If you change a role description, also update `RolesSeeder` and add a new sync migration.
+8. Test by logging in with at least one role inside and one role outside the allow-list.
+
+## Behavioural rules (always enforced)
+
+- Inactive users (`is_active = false`) cannot log in (`LoginController`) and cannot pass `role` middleware.
+- Service accounts cannot log in to the dashboard at all.
+- The master user cannot be demoted from `super_admin`, deactivated, or deleted.
+- The currently-authenticated user is never listed in the Users tab and cannot modify themselves there.
+- Admin users cannot see, list, query, or modify super admin users. Enforce in the controller queries, not just in the view.
+- Hiding a UI element is not enough — every protected route MUST have the matching `role` middleware as a backstop.
+
+## File map
+
+| Concern | File |
+|---------|------|
+| Role list + descriptions | `database/seeders/RolesSeeder.php` |
+| Access map (feature → roles) | `app/Support/Access.php` |
+| Route guard | `app/Http/Middleware/EnsureRole.php` (alias `role`) |
+| User role helpers | `app/Models/User.php` (`hasAnyRole`, `canAccess`, `isSuperAdmin`, `isMaster`) |
+| Master user definition | `database/seeders/MasterUserSeeder.php` |
+| Sync after description change | new migration calling `RolesSeeder::run()` |

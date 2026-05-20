@@ -49,13 +49,24 @@
 
                 <div class="field">
                     <label for="password">Password</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        required
-                        autocomplete="current-password"
-                    >
+                    <div class="input-with-action">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            required
+                            autocomplete="current-password"
+                        >
+                        <button
+                            type="button"
+                            class="input-toggle"
+                            data-password-toggle="password"
+                            aria-label="Show password"
+                            aria-pressed="false"
+                        >
+                            @include('partials.eye-icons')
+                        </button>
+                    </div>
                     @error('password')
                         <p class="error">{{ $message }}</p>
                     @enderror
@@ -65,5 +76,7 @@
             </form>
         </div>
     </main>
+
+    <script src="{{ asset('js/auth.js') }}" defer></script>
 </body>
 </html>

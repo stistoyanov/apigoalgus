@@ -113,6 +113,56 @@ body.auth-page {
     box-shadow: 0 0 0 3px rgba(37, 99, 199, 0.15);
 }
 
+.input-with-action {
+    position: relative;
+}
+
+.input-with-action input {
+    padding-right: 3rem;
+}
+
+.input-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.input-toggle:hover {
+    color: var(--blue-800);
+    background: var(--blue-50);
+}
+
+.input-toggle:focus-visible {
+    outline: none;
+    color: var(--blue-800);
+    box-shadow: 0 0 0 3px rgba(37, 99, 199, 0.18);
+}
+
+.input-toggle .icon-eye-off {
+    display: none;
+}
+
+.input-toggle.is-visible .icon-eye {
+    display: none;
+}
+
+.input-toggle.is-visible .icon-eye-off {
+    display: block;
+}
+
 .auth-form .error {
     margin-top: 0.35rem;
     font-size: 0.8125rem;

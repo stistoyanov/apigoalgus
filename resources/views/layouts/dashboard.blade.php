@@ -31,10 +31,20 @@
     <div class="dashboard-shell" id="dashboard-shell">
         <aside class="dashboard-sidebar" id="dashboard-sidebar">
             <nav aria-label="Dashboard">
+                @php $u = auth()->user(); @endphp
                 <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') && ! request()->routeIs('dashboard.*') ? 'is-active' : '' }}">Overview</a>
-                <a href="{{ route('dashboard.scheduler') }}" class="{{ request()->routeIs('dashboard.scheduler*') ? 'is-active' : '' }}">Scheduler</a>
-                <a href="{{ route('dashboard.logs') }}" class="{{ request()->routeIs('dashboard.logs*') ? 'is-active' : '' }}">Logs</a>
-                <a href="{{ route('dashboard.email') }}" class="{{ request()->routeIs('dashboard.email*') ? 'is-active' : '' }}">Email test</a>
+                @if (\App\Support\Access::allowed($u, 'scheduler.view'))
+                    <a href="{{ route('dashboard.scheduler') }}" class="{{ request()->routeIs('dashboard.scheduler*') ? 'is-active' : '' }}">Scheduler</a>
+                @endif
+                @if (\App\Support\Access::allowed($u, 'logs.view'))
+                    <a href="{{ route('dashboard.logs') }}" class="{{ request()->routeIs('dashboard.logs*') ? 'is-active' : '' }}">Logs</a>
+                @endif
+                @if (\App\Support\Access::allowed($u, 'email_test'))
+                    <a href="{{ route('dashboard.email') }}" class="{{ request()->routeIs('dashboard.email*') ? 'is-active' : '' }}">Email test</a>
+                @endif
+                @if (\App\Support\Access::allowed($u, 'users.view'))
+                    <a href="{{ route('dashboard.users') }}" class="{{ request()->routeIs('dashboard.users*') ? 'is-active' : '' }}">Users</a>
+                @endif
             </nav>
         </aside>
 
