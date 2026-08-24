@@ -44,3 +44,6 @@ Icon?
 
 # Deploy secrets
 /deploy/deploy.env
+
+# Ginny WordPress offline mirrors (large; do not deploy)
+/archives/

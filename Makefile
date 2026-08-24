@@ -203,6 +203,32 @@ ssh: ## SSH to Superhosting (uses deploy/deploy.env)
 	ssh -p "$${DEPLOY_SSH_PORT}" "$${DEPLOY_SSH_USER}@$${DEPLOY_SSH_HOST}"
 
 # ---------------------------------------------------------------------------
+# Ginny static sites (local preview)
+# ---------------------------------------------------------------------------
+
+.PHONY: serve-ginny
+serve-ginny: ## Serve Ginny Rock Bar at http://localhost:8070
+	@echo "Ginny Rock Bar → http://localhost:8070"
+	@php -S localhost:8070 -t ginny
+
+.PHONY: serve-kitchen
+serve-kitchen: ## Serve Ginny's Kitchen at http://localhost:8071
+	@echo "Ginny's Kitchen → http://localhost:8071"
+	@php -S localhost:8071 -t kitchen
+
+.PHONY: open-ginny
+open-ginny: ## Open local Ginny Rock Bar in browser
+	@open http://localhost:8070
+
+.PHONY: open-kitchen
+open-kitchen: ## Open local Ginny's Kitchen in browser
+	@open http://localhost:8071
+
+.PHONY: archive-ginny
+archive-ginny: ## Re-download WP mirrors + media (while old domains are live)
+	@./scripts/archive-ginny-sites.sh
+
+# ---------------------------------------------------------------------------
 # Misc
 # ---------------------------------------------------------------------------
 
@@ -214,3 +240,5 @@ open: ## Open local app in browser (macOS)
 urls: ## Print local URLs and DB connection info
 	@echo "App:      $(APP_URL)"
 	@echo "MySQL:    127.0.0.1:33069 (user: apigoalgus, db: apigoalgus)"
+	@echo "Ginny:    http://localhost:8070  (make serve-ginny)"
+	@echo "Kitchen:  http://localhost:8071  (make serve-kitchen)"
