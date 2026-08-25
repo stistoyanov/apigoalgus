@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-require __DIR__.'/../lib/layout.php';
+require __DIR__.'/../../lib/layout.php';
 
-$locale = 'bg';
+$locale = 'en';
 $page = 'ginnys-menu';
 $paths = kitchen_paths($locale, $page);
 $brunch = kitchen_brunch_items($locale);
