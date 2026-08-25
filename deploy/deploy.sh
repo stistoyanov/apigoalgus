@@ -94,6 +94,8 @@ rsync "${RSYNC_FLAGS[@]}" --delete \
     --exclude='barbergarage/' \
     --exclude='ginny/' \
     --exclude='kitchen/' \
+    --exclude='backups/' \
+    --exclude='archives/' \
     "${PROJECT_ROOT}/" \
     "${RSYNC_TARGET}"
 

@@ -63,6 +63,9 @@ Run `make` or `make help` to list all targets. Common shortcuts:
 | `make deploy-kitchen` | Deploy kitchen.ginny.bg to `public_html/kitchen` |
 | `make deploy-sites` | Deploy all static sites (barbergarage + ginny + kitchen) |
 | `make deploy-all` | Deploy API + all static sites |
+| `make serve-ginny` | Local Ginny at http://localhost:8070 |
+| `make serve-kitchen` | Local Kitchen at http://localhost:8071 |
+| `make backup-ginny-sites` | Snapshot `ginny/` + `kitchen/` into `backups/YYYY-MM-DD/` (Git-tracked) |
 | `make ssh` | SSH to production server |
 
 ---
@@ -312,6 +315,16 @@ Local preview (no deploy):
 make serve-ginny      # http://localhost:8070
 make serve-kitchen    # http://localhost:8071
 ```
+
+### Pre-redesign backups (Git-tracked)
+
+Dated copies of the live PHP shells live under [`backups/`](backups/MANIFEST.md) (e.g. `backups/ginny-2026-08-25/`). These are **not** deployed.
+
+```bash
+make backup-ginny-sites   # create a new dated snapshot
+```
+
+WordPress HTML mirrors (if present) stay in gitignored `archives/` — separate from these snapshots.
 
 ---
 

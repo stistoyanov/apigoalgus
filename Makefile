@@ -265,6 +265,16 @@ open-kitchen: ## Open local Ginny's Kitchen in browser
 archive-ginny: ## Re-download WP mirrors + media (while old domains are live)
 	@./scripts/archive-ginny-sites.sh
 
+.PHONY: backup-ginny-sites
+backup-ginny-sites: ## Snapshot ginny/ + kitchen/ into backups/YYYY-MM-DD (tracked in Git)
+	@set -e; \
+	DATE=$$(date +%Y-%m-%d); \
+	mkdir -p "backups/ginny-$${DATE}" "backups/kitchen-$${DATE}"; \
+	rsync -a --delete --exclude='.DS_Store' --exclude='._*' ginny/ "backups/ginny-$${DATE}/"; \
+	rsync -a --delete --exclude='.DS_Store' --exclude='._*' kitchen/ "backups/kitchen-$${DATE}/"; \
+	echo "Created backups/ginny-$${DATE}/ and backups/kitchen-$${DATE}/"; \
+	du -sh "backups/ginny-$${DATE}" "backups/kitchen-$${DATE}"
+
 # ---------------------------------------------------------------------------
 # Misc
 # ---------------------------------------------------------------------------
