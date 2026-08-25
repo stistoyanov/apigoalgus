@@ -55,8 +55,9 @@ Run `make` or `make help` to list all targets. Common shortcuts:
 | `make test` | Run PHPUnit |
 | `make deploy-setup` | Create `deploy/deploy.env` from example |
 | `make deploy-merge` | Merge `main` into `live` |
-| `make deploy-dry-run` | Preview deploy (rsync dry run) |
-| `make deploy` | Deploy Laravel API to `public_html/apigoalgus` |
+| `make deploy` / `make deploy-api` | Deploy **Laravel API only** to `public_html/apigoalgus` |
+| `make deploy-check` / `make deploy-api-check` | Verify API deploy prerequisites |
+| `make deploy-dry-run` / `make deploy-api-dry-run` | Preview API rsync (dry run) |
 | `make deploy-barbergarage` | Deploy static site to `public_html/barbergarage` |
 | `make deploy-ginny` | Deploy ginny.bg to `public_html/ginny` |
 | `make deploy-kitchen` | Deploy kitchen.ginny.bg to `public_html/kitchen` |
@@ -248,11 +249,12 @@ make deploy-merge       # merge main into live (optional helper)
 git checkout live
 git status              # must be clean
 
-make deploy-check       # verify branch, deploy.env, clean tree
-make deploy-dry-run     # optional: preview rsync
-make deploy
+make deploy-api-check   # verify branch, deploy.env, clean tree
+make deploy-api-dry-run # optional: preview rsync
+make deploy-api         # Laravel API only (same as: make deploy)
 ```
 
+Does **not** touch ginny, kitchen, or barbergarage.
 ### What the deploy script does
 
 1. Verifies current branch is `live`.

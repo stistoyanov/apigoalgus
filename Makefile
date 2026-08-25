@@ -165,22 +165,32 @@ deploy-setup: ## Copy deploy/deploy.env.example to deploy/deploy.env
 	@if [ ! -f deploy/deploy.env ]; then cp deploy/deploy.env.example deploy/deploy.env && echo "Created deploy/deploy.env"; else echo "deploy/deploy.env already exists"; fi
 
 .PHONY: deploy-check
-deploy-check: ## Verify deploy prerequisites (branch, clean tree, deploy.env)
+deploy-check: ## Verify API deploy prerequisites (branch, clean tree, deploy.env)
 	@./deploy/deploy.sh --check
 
 .PHONY: deploy
-deploy: ## Deploy to production (live branch, clean tree)
+deploy: ## Deploy Laravel API only (live branch, clean tree)
 	@./deploy/deploy.sh
 
 .PHONY: deploy-dry-run
-deploy-dry-run: ## Preview rsync changes without deploying
+deploy-dry-run: ## Preview API rsync without deploying
 	@./deploy/deploy.sh --dry-run
+
+# Explicit aliases — same as deploy / deploy-check / deploy-dry-run
+.PHONY: deploy-api
+deploy-api: deploy ## Deploy Laravel API only (alias of make deploy)
+
+.PHONY: deploy-api-check
+deploy-api-check: deploy-check ## Verify API deploy prerequisites (alias of make deploy-check)
+
+.PHONY: deploy-api-dry-run
+deploy-api-dry-run: deploy-dry-run ## Preview API rsync (alias of make deploy-dry-run)
 
 .PHONY: deploy-merge
 deploy-merge: ## Merge main into live (does not deploy)
 	@git checkout live
 	@git merge main
-	@echo "Merged main into live. Run 'make deploy' from the live branch when ready."
+	@echo "Merged main into live. Run 'make deploy-api' from the live branch when ready."
 
 .PHONY: deploy-barbergarage-check
 deploy-barbergarage-check: ## Verify barbergarage deploy prerequisites
