@@ -58,7 +58,10 @@ Run `make` or `make help` to list all targets. Common shortcuts:
 | `make deploy-dry-run` | Preview deploy (rsync dry run) |
 | `make deploy` | Deploy Laravel API to `public_html/apigoalgus` |
 | `make deploy-barbergarage` | Deploy static site to `public_html/barbergarage` |
-| `make deploy-all` | Deploy both API and barbergarage |
+| `make deploy-ginny` | Deploy ginny.bg to `public_html/ginny` |
+| `make deploy-kitchen` | Deploy kitchen.ginny.bg to `public_html/kitchen` |
+| `make deploy-sites` | Deploy all static sites (barbergarage + ginny + kitchen) |
+| `make deploy-all` | Deploy API + all static sites |
 | `make ssh` | SSH to production server |
 
 ---
@@ -220,6 +223,8 @@ Deploy syncs code with `rsync` over SSH. It **only** runs from the `live` branch
    DEPLOY_SSH_USER=goalgusb
    DEPLOY_REMOTE_PATH=public_html/apigoalgus
    DEPLOY_BARBERGARAGE_REMOTE_PATH=public_html/barbergarage
+   DEPLOY_GINNY_REMOTE_PATH=public_html/ginny
+   DEPLOY_KITCHEN_REMOTE_PATH=public_html/kitchen
    DEPLOY_PHP_BIN=/usr/local/bin/ea-php83
    DEPLOY_COMPOSER_BIN=/opt/cpanel/composer/bin/composer
    ```
@@ -260,31 +265,50 @@ make deploy
    - `php artisan route:cache`
    - `php artisan view:cache`
 
-**Excluded from sync** (stay on server or are rebuilt there): `.env`, `vendor/`, `node_modules/`, `storage/logs/`, compiled views/cache, `docker/`, `.git/`, `barbergarage/`.
+**Excluded from sync** (stay on server or are rebuilt there): `.env`, `vendor/`, `node_modules/`, `storage/logs/`, compiled views/cache, `docker/`, `.git/`, `barbergarage/`, `ginny/`, `kitchen/`.
 
-### Deploy barbergarage (static HTML/JS)
+### Deploy static sites (barbergarage / ginny / kitchen)
 
-The [barbergarage/](barbergarage/) folder is a separate static website (HTML, CSS, vanilla JS). It deploys to its own path on the same server — **not** inside the Laravel app.
+Each site lives in its own folder and deploys to its own cPanel document root on the same server — **not** inside the Laravel app. Shared script: [`deploy/deploy-static-site.sh`](deploy/deploy-static-site.sh).
 
-| Setting | Value |
-|---------|-------|
-| Local source | `barbergarage/` |
-| Remote path | `~/public_html/barbergarage` |
-| Live URL | Your barbergarage.bg domain (document root must point at this folder in cPanel) |
+| Site | Local source | Remote path | Live URL |
+|------|--------------|-------------|----------|
+| BarberGarage | `barbergarage/` | `~/public_html/barbergarage` | [https://barbergarage.bg](https://barbergarage.bg) |
+| Ginny Rock Bar | `ginny/` | `~/public_html/ginny` | [https://ginny.bg](https://ginny.bg) |
+| Ginny's Kitchen | `kitchen/` | `~/public_html/kitchen` | [https://kitchen.ginny.bg](https://kitchen.ginny.bg) |
+
+In cPanel → **Domains**, each domain’s document root must point at the matching folder (already done for ginny / kitchen). Also turn **HTTPS Redirect** on for each domain (SSL cert alone is not enough).
 
 ```bash
 git checkout live
 git status              # must be clean
 
-make deploy-barbergarage-check
-make deploy-barbergarage-dry-run   # optional preview
+# One site at a time
+make deploy-ginny-check
+make deploy-ginny-dry-run   # optional preview
+make deploy-ginny
+
+make deploy-kitchen-check
+make deploy-kitchen
+
 make deploy-barbergarage
+
+# Or all static sites
+make deploy-sites
+
+# Or API + every static site
+make deploy-all
 ```
 
-No Composer or Artisan steps — rsync only. To deploy **both** sites in one go:
+No Composer or Artisan steps for static sites — rsync only. After sync, the script sets directories to `755` and files to `644` so Apache can read them (cPanel empty folders are often created as `0750`, which causes 403).
+
+**BarberGarage only:** `config.php` and `cache/*` are excluded so production secrets and API cache survive deploys.
+
+Local preview (no deploy):
 
 ```bash
-make deploy-all
+make serve-ginny      # http://localhost:8070
+make serve-kitchen    # http://localhost:8071
 ```
 
 ---

@@ -1,9 +1,25 @@
+# Document root in cPanel must be public_html/kitchen (domain: kitchen.ginny.bg).
+
 DirectoryIndex index.php index.html
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Force HTTPS (also enable "HTTPS Redirect" in cPanel → Domains).
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Trailing slashes for clean section URLs
+    RewriteRule ^ginnys-menu$ ginnys-menu/ [R=301,L,NC]
+    RewriteRule ^en$ en/ [R=301,L,NC]
+
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ginnys-menu/?$ ginnys-menu/index.php [L]
     RewriteRule ^en/?$ en/index.php [L]
+</IfModule>
+
+# Deny direct access to PHP includes.
+<IfModule mod_alias.c>
+    RedirectMatch 403 ^/lib(/|$)
 </IfModule>

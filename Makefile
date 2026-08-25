@@ -187,15 +187,42 @@ deploy-barbergarage-check: ## Verify barbergarage deploy prerequisites
 	@./deploy/deploy-barbergarage.sh --check
 
 .PHONY: deploy-barbergarage
-deploy-barbergarage: ## Deploy barbergarage static site (live branch, clean tree)
+deploy-barbergarage: ## Deploy barbergarage.bg (live branch, clean tree)
 	@./deploy/deploy-barbergarage.sh
 
 .PHONY: deploy-barbergarage-dry-run
 deploy-barbergarage-dry-run: ## Preview barbergarage rsync without deploying
 	@./deploy/deploy-barbergarage.sh --dry-run
 
+.PHONY: deploy-ginny-check
+deploy-ginny-check: ## Verify ginny.bg deploy prerequisites
+	@./deploy/deploy-ginny.sh --check
+
+.PHONY: deploy-ginny
+deploy-ginny: ## Deploy ginny.bg (live branch, clean tree)
+	@./deploy/deploy-ginny.sh
+
+.PHONY: deploy-ginny-dry-run
+deploy-ginny-dry-run: ## Preview ginny rsync without deploying
+	@./deploy/deploy-ginny.sh --dry-run
+
+.PHONY: deploy-kitchen-check
+deploy-kitchen-check: ## Verify kitchen.ginny.bg deploy prerequisites
+	@./deploy/deploy-kitchen.sh --check
+
+.PHONY: deploy-kitchen
+deploy-kitchen: ## Deploy kitchen.ginny.bg (live branch, clean tree)
+	@./deploy/deploy-kitchen.sh
+
+.PHONY: deploy-kitchen-dry-run
+deploy-kitchen-dry-run: ## Preview kitchen rsync without deploying
+	@./deploy/deploy-kitchen.sh --dry-run
+
+.PHONY: deploy-sites
+deploy-sites: deploy-barbergarage deploy-ginny deploy-kitchen ## Deploy all static sites (not the API)
+
 .PHONY: deploy-all
-deploy-all: deploy deploy-barbergarage ## Deploy apigoalgus API and barbergarage site
+deploy-all: deploy deploy-sites ## Deploy API + all static sites
 
 .PHONY: ssh
 ssh: ## SSH to Superhosting (uses deploy/deploy.env)
