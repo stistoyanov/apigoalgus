@@ -12,11 +12,17 @@ DirectoryIndex index.php index.html
     # Trailing slashes for clean section URLs
     RewriteRule ^programa$ programa/ [R=301,L,NC]
     RewriteRule ^gallery$ gallery/ [R=301,L,NC]
+    RewriteRule ^en$ en/ [R=301,L,NC]
+    RewriteRule ^en/programa$ en/programa/ [R=301,L,NC]
+    RewriteRule ^en/gallery$ en/gallery/ [R=301,L,NC]
 
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^programa/?$ programa/index.php [L]
     RewriteRule ^gallery/?$ gallery/index.php [L]
+    RewriteRule ^en/?$ en/index.php [L]
+    RewriteRule ^en/programa/?$ en/programa/index.php [L]
+    RewriteRule ^en/gallery/?$ en/gallery/index.php [L]
 </IfModule>
 
 # Deny direct access to PHP includes.

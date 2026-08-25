@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-require __DIR__.'/../lib/layout.php';
+require __DIR__.'/../../lib/layout.php';
 
-$locale = 'bg';
+$locale = 'en';
 $page = 'programa';
 $paths = ginny_paths($locale, $page);
 $posts = ginny_news_posts($locale, $paths['base']);

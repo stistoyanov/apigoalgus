@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-require __DIR__.'/../lib/layout.php';
+require __DIR__.'/../../lib/layout.php';
 
-$locale = 'bg';
+$locale = 'en';
 $page = 'gallery';
 $paths = ginny_paths($locale, $page);
 $photos = ginny_gallery_photos($locale, $paths['base']);

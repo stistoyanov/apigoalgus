@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-require __DIR__.'/lib/layout.php';
-require __DIR__.'/lib/home.php';
+require __DIR__.'/../lib/layout.php';
+require __DIR__.'/../lib/home.php';
 
-$locale = 'bg';
+$locale = 'en';
 $page = 'home';
 $paths = ginny_paths($locale, $page);
 
