@@ -115,6 +115,7 @@ rsync "${RSYNC_FLAGS[@]}" --delete \
     -e "ssh ${SSH_OPTS[*]}" \
     --exclude='.DS_Store' \
     --exclude='._*' \
+    --exclude='.well-known' \
     "${EXTRA_EXCLUDES[@]}" \
     "${SOURCE_DIR}/" \
     "${RSYNC_TARGET}"
