@@ -36,7 +36,7 @@ ginny_header([
             if ($src === '') {
                 continue;
             }
-            if (! str_starts_with($src, 'http://') && ! str_starts_with($src, 'https://')) {
+            if (strpos($src, 'http://') !== 0 && strpos($src, 'https://') !== 0) {
                 $src = $paths['base'].ltrim($src, '/');
             }
             ?>

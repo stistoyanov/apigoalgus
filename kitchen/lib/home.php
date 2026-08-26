@@ -28,7 +28,7 @@ function kitchen_render_home(string $locale, array $paths, array $payload): void
     foreach ($teaserFallbacks as $n => $fallback) {
         $fromContent = kitchen_c($payload, 'menu', 'teaser'.$n.'_image');
         $src = $fromContent !== '' ? $fromContent : $fallback;
-        if (str_starts_with($src, 'http://') || str_starts_with($src, 'https://')) {
+        if (strpos($src, 'http://') === 0 || strpos($src, 'https://') === 0) {
             $teasers[$n] = $src;
         } else {
             $teasers[$n] = kitchen_asset($src, $base);

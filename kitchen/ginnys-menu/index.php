@@ -59,7 +59,7 @@ kitchen_header([
                     $title = is_string($item['title'] ?? null) ? $item['title'] : '';
                     $desc = is_string($item['desc'] ?? null) ? $item['desc'] : '';
                     $imageUrl = is_string($item['image_url'] ?? null) ? $item['image_url'] : '';
-                    if ($imageUrl !== '' && ! str_starts_with($imageUrl, 'http://') && ! str_starts_with($imageUrl, 'https://')) {
+                    if ($imageUrl !== '' && strpos($imageUrl, 'http://') !== 0 && strpos($imageUrl, 'https://') !== 0) {
                         $imageUrl = kitchen_asset($imageUrl, $paths['base']);
                     }
                     ?>

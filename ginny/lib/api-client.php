@@ -275,7 +275,7 @@ if (! function_exists('ginny_media_url')) {
         $items = $payload['media'][$purpose] ?? [];
         if (is_array($items) && isset($items[0]['url']) && is_string($items[0]['url']) && $items[0]['url'] !== '') {
             $url = $items[0]['url'];
-            if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+            if (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0) {
                 return $url;
             }
 
