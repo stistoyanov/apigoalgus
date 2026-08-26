@@ -11,5 +11,6 @@ class DatabaseSeeder extends Seeder
         $this->call(MasterUserSeeder::class);
         $this->call(SystemUserSeeder::class);
         $this->call(TodorUserSeeder::class);
+        $this->call(GinnyUserSeeder::class);
     }
 }

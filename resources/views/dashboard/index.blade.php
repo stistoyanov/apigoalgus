@@ -4,13 +4,17 @@
 
 @section('content')
     <div class="panel">
-        <h1>Welcome, {{ $user->name }}</h1>
-        <p class="lead">
-            Signed in as <strong>{{ $user->email }}</strong>
-            @if ($user->role)
-                · <span class="role-pill">{{ $user->role->name }}</span>
-            @endif
-        </p>
+        <div class="panel-head">
+            <div>
+                <h1>Welcome, {{ $user->name }}</h1>
+                <p class="lead">
+                    Signed in as <strong>{{ $user->email }}</strong>
+                    @if ($user->role)
+                        · <span class="role-pill">{{ $user->role->name }}</span>
+                    @endif
+                </p>
+            </div>
+        </div>
 
         @if ($showSystemStats)
             <div class="meta-grid">

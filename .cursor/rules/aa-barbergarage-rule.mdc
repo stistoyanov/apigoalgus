@@ -22,7 +22,7 @@ Dashboard: `/dashboard/sites` lists all three. Tabs Posts (Ginny) and Menu (Kitc
 - **Content & settings** → `site_contents`, `site_settings` tables; edited in `/dashboard/sites/barbergarage`.
 - **Media** → `storage/app/public/sites/barbergarage/{images|videos}/` on the `public` disk; served via **HMAC signed URLs** (`/sites/barbergarage/m/{id}?signature=...`), not via Bearer token in the browser.
 - **API** → `GET /api/v1/site/content` or `/api/v1/site/content/{locale}` with `Authorization: Bearer <token>`. Token is for BarberGarage **server-side** fetch only — never expose in client JS.
-- **Human owner** → `todor@barbergarage.bg` (`TodorUserSeeder`, role `admin`).
+- **Human owners** → BarberGarage: `todor@barbergarage.bg` (`TodorUserSeeder`); Ginny + Kitchen: `ginny.bar@abv.bg` (`GinnyUserSeeder`). Both role `admin`.
 
 ## Static frontend (Phase 2 — live)
 

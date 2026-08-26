@@ -1,14 +1,14 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Goalgus API — backend services for goalgus.bg">
-    <title>{{ config('app.name', 'Goalgus API') }}</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/GoalgusLogoIcon.png') }}">
+@extends('layouts.public')
+
+@section('title', config('app.name', 'Goalgus API'))
+@section('meta_description', 'Goalgus API — backend services for goalgus.bg')
+@section('body_class', 'landing-page')
+
+@push('styles')
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
-</head>
-<body>
+@endpush
+
+@section('content')
     <div class="nav-backdrop" aria-hidden="true"></div>
 
     <header class="site-header">
@@ -28,9 +28,9 @@
                 <a href="{{ url('/up') }}">API health</a>
                 @auth
                     <a href="{{ route('dashboard') }}" class="btn btn-primary">Dashboard</a>
-                    <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+                    <form method="POST" action="{{ route('logout') }}" class="inline-form">
                         @csrf
-                        <button type="submit" class="btn btn-outline" style="cursor:pointer;font-family:inherit;">Log out</button>
+                        <button type="submit" class="btn btn-outline">Log out</button>
                     </form>
                 @else
                     <a href="{{ route('login') }}" class="btn btn-primary">Login</a>
@@ -69,17 +69,17 @@
             </div>
             <div class="feature-grid">
                 <article class="feature-card">
-                    <div class="feature-icon" aria-hidden="true">⚡</div>
+                    <div class="feature-mark" aria-hidden="true">SYNC</div>
                     <h3>Synchronous processing</h3>
                     <p>Jobs run inline for predictable behaviour and simpler operations on shared hosting.</p>
                 </article>
                 <article class="feature-card">
-                    <div class="feature-icon" aria-hidden="true">🔒</div>
+                    <div class="feature-mark" aria-hidden="true">SEC</div>
                     <h3>Secure by default</h3>
                     <p>Environment isolation between local Docker and live Superhosting deployments.</p>
                 </article>
                 <article class="feature-card">
-                    <div class="feature-icon" aria-hidden="true">📡</div>
+                    <div class="feature-mark" aria-hidden="true">CRON</div>
                     <h3>Scheduled tasks</h3>
                     <p>Cron-driven scheduler in production; dedicated container locally for parity.</p>
                 </article>
@@ -114,7 +114,8 @@
             <p>&copy; <span id="year"></span> Goalgus. All rights reserved.</p>
         </div>
     </footer>
+@endsection
 
+@push('scripts')
     <script src="{{ asset('js/landing.js') }}" defer></script>
-</body>
-</html>
+@endpush

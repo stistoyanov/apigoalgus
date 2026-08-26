@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Dashboard') — {{ config('app.name', 'Goalgus API') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('images/GoalgusLogoIcon.png') }}">
-    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
 </head>
 <body class="dashboard-page">
@@ -19,8 +22,8 @@
                     <span class="dashboard-menu-icon" aria-hidden="true"></span>
                     <span class="sr-only">Menu</span>
                 </button>
-                <a href="{{ url('/') }}">Home</a>
-                <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+                <span class="dashboard-user" title="{{ auth()->user()->email }}">{{ auth()->user()->email }}</span>
+                <form method="POST" action="{{ route('logout') }}" class="inline-form">
                     @csrf
                     <button type="submit" class="btn-logout">Log out</button>
                 </form>
