@@ -57,6 +57,7 @@ function kitchen_header(array $meta = []): void
             <ul>
                 <li><a href="<?= kitchen_esc($paths['home']) ?>" class="<?= $active === 'home' ? 'is-active' : '' ?>"><?= kitchen_esc(kitchen_t('nav_home', $locale)) ?></a></li>
                 <li><a href="<?= kitchen_esc($paths['menu']) ?>" class="<?= $active === 'menu' ? 'is-active' : '' ?>"><?= kitchen_esc(kitchen_t('nav_menu', $locale)) ?></a></li>
+                <li><a href="<?= kitchen_esc(kitchen_bar_url($locale)) ?>" target="_blank" rel="noopener noreferrer"><?= kitchen_esc(kitchen_t('nav_bar', $locale)) ?></a></li>
                 <li><a class="cta-nav" href="tel:+359886060687"><?= kitchen_esc(kitchen_t('nav_reserve', $locale)) ?></a></li>
             </ul>
             <div class="lang-switch" aria-label="<?= kitchen_esc(kitchen_t('lang_aria', $locale)) ?>">

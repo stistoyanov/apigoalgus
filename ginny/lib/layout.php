@@ -58,6 +58,7 @@ function ginny_header(array $meta = []): void
                 <li><a href="<?= ginny_esc($paths['home']) ?>" class="<?= $active === 'home' ? 'is-active' : '' ?>"><?= ginny_esc(ginny_t('nav_home', $locale)) ?></a></li>
                 <li><a href="<?= ginny_esc($paths['news']) ?>" class="<?= $active === 'programa' ? 'is-active' : '' ?>"><?= ginny_esc(ginny_t('nav_news', $locale)) ?></a></li>
                 <li><a href="<?= ginny_esc($paths['gallery']) ?>" class="<?= $active === 'gallery' ? 'is-active' : '' ?>"><?= ginny_esc(ginny_t('nav_gallery', $locale)) ?></a></li>
+                <li><a href="<?= ginny_esc(ginny_kitchen_url($locale)) ?>" target="_blank" rel="noopener noreferrer"><?= ginny_esc(ginny_t('nav_kitchen', $locale)) ?></a></li>
             </ul>
             <div class="lang-switch" aria-label="<?= ginny_esc(ginny_t('lang_aria', $locale)) ?>">
                 <?php if ($locale === 'bg'): ?>

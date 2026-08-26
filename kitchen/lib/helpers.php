@@ -17,6 +17,14 @@ function kitchen_asset(string $path, string $base = ''): string
     return $base.ltrim($path, '/');
 }
 
+/** Absolute URL to the sister Rock Bar site for the current locale. */
+function kitchen_bar_url(string $locale = 'bg'): string
+{
+    return $locale === 'en'
+        ? 'https://ginny.bg/en/'
+        : 'https://ginny.bg/';
+}
+
 /**
  * @return array{locale:string,base:string,home:string,menu:string,lang_switch:string,lang_other:string}
  */

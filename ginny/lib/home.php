@@ -111,6 +111,15 @@ function ginny_render_home(string $locale, array $paths): void
         </div>
     </section>
 
+    <section class="section sister">
+        <div class="section-inner reveal">
+            <p class="eyebrow"><?= ginny_esc($t('sister_eyebrow')) ?></p>
+            <h2 class="section__title"><?= ginny_esc($t('sister_title')) ?></h2>
+            <p><?= ginny_esc($t('sister_body')) ?></p>
+            <a class="btn" href="<?= ginny_esc(ginny_kitchen_url($locale)) ?>" target="_blank" rel="noopener noreferrer"><?= ginny_esc($t('sister_cta')) ?></a>
+        </div>
+    </section>
+
     <section class="cheers">
         <div class="cheers__bg" data-parallax="0.25" aria-hidden="true"></div>
         <div class="cheers__inner reveal">

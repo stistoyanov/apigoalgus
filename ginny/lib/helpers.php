@@ -18,6 +18,14 @@ function ginny_asset(string $path, string $base = ''): string
     return $base.ltrim($path, '/');
 }
 
+/** Absolute URL to the sister Kitchen site for the current locale. */
+function ginny_kitchen_url(string $locale = 'bg'): string
+{
+    return $locale === 'en'
+        ? 'https://kitchen.ginny.bg/en/'
+        : 'https://kitchen.ginny.bg/';
+}
+
 /**
  * Paths for a given locale and depth.
  *

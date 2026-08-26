@@ -125,6 +125,15 @@ function kitchen_render_home(string $locale, array $paths): void
         </div>
     </section>
 
+    <section class="section sister">
+        <div class="section-inner reveal">
+            <p class="eyebrow"><?= kitchen_esc($t('sister_eyebrow')) ?></p>
+            <h2 class="section__title"><?= kitchen_esc($t('sister_title')) ?></h2>
+            <p><?= kitchen_esc($t('sister_body')) ?></p>
+            <a class="btn" href="<?= kitchen_esc(kitchen_bar_url($locale)) ?>" target="_blank" rel="noopener noreferrer"><?= kitchen_esc($t('sister_cta')) ?></a>
+        </div>
+    </section>
+
     <section class="cheers">
         <div class="cheers__bg" data-parallax="0.25" aria-hidden="true"></div>
         <div class="cheers__inner reveal">
