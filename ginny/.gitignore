@@ -1,0 +1,6 @@
+config.php
+cache/*
+!cache/.gitignore
+!cache/.htaccess
+.DS_Store
+._*

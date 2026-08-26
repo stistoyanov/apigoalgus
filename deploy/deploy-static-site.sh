@@ -60,12 +60,22 @@ case "${SITE}" in
     ginny)
         SOURCE_DIR="${PROJECT_ROOT}/ginny"
         REMOTE_PATH="${DEPLOY_GINNY_REMOTE_PATH:-public_html/ginny}"
-        EXTRA_EXCLUDES=()
+        EXTRA_EXCLUDES=(
+            --exclude='config.php'
+            --exclude='cache/*'
+            --exclude='!cache/.gitignore'
+            --exclude='!cache/.htaccess'
+        )
         ;;
     kitchen)
         SOURCE_DIR="${PROJECT_ROOT}/kitchen"
         REMOTE_PATH="${DEPLOY_KITCHEN_REMOTE_PATH:-public_html/kitchen}"
-        EXTRA_EXCLUDES=()
+        EXTRA_EXCLUDES=(
+            --exclude='config.php'
+            --exclude='cache/*'
+            --exclude='!cache/.gitignore'
+            --exclude='!cache/.htaccess'
+        )
         ;;
     *)
         echo "Error: unknown site '${SITE}'. Use: barbergarage | ginny | kitchen"

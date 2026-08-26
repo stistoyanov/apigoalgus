@@ -23,6 +23,14 @@ class SiteMedia extends Model
 
     public const PURPOSE_FAVICON = 'favicon';
 
+    public const PURPOSE_MENU = 'menu';
+
+    public const PURPOSE_DRINKS = 'drinks';
+
+    public const PURPOSE_STORY_BG = 'story_bg';
+
+    public const PURPOSE_CHEERS_BG = 'cheers_bg';
+
     protected $fillable = [
         'site_id',
         'kind',

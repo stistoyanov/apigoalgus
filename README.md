@@ -307,7 +307,7 @@ make deploy-all
 
 No Composer or Artisan steps for static sites — rsync only. After sync, the script sets directories to `755` and files to `644` so Apache can read them (cPanel empty folders are often created as `0750`, which causes 403).
 
-**BarberGarage only:** `config.php` and `cache/*` are excluded so production secrets and API cache survive deploys.
+**BarberGarage / Ginny / Kitchen:** `config.php` and `cache/*` are excluded so production secrets and API cache survive deploys.
 
 Local preview (no deploy):
 

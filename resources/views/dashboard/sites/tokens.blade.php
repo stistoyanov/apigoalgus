@@ -27,7 +27,7 @@
             @csrf
             <label>
                 Token name
-                <input type="text" name="name" placeholder="barbergarage.bg production" required maxlength="120">
+                <input type="text" name="name" placeholder="{{ $site->domain }} production" required maxlength="120">
             </label>
             <button type="submit" class="btn btn-primary">Create token</button>
         </form>
@@ -35,7 +35,7 @@
         <p class="muted small">API endpoint: <code>{{ url('/api/v1/site/content') }}</code> or <code>{{ url('/api/v1/site/content/bg') }}</code></p>
 
         @if ($tokens->isEmpty())
-            <p class="muted-block">No tokens yet. Create one for barbergarage.bg to connect.</p>
+            <p class="muted-block">No tokens yet. Create one for {{ $site->domain }} to connect the public site.</p>
         @else
             <div class="table-scroll">
                 <table class="data-table">

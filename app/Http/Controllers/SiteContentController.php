@@ -23,11 +23,17 @@ class SiteContentController extends Controller
             $locale = $site->default_locale;
         }
 
+        $sections = $this->repository->contentsForEditor($site, $locale);
+        $sectionOrder = array_values(array_unique(array_merge(
+            SiteContent::SECTIONS,
+            $sections->keys()->all(),
+        )));
+
         return view('dashboard.sites.content', [
             'site' => $site,
             'locale' => $locale,
-            'sections' => $this->repository->contentsForEditor($site, $locale),
-            'sectionOrder' => SiteContent::SECTIONS,
+            'sections' => $sections,
+            'sectionOrder' => $sectionOrder,
         ]);
     }
 

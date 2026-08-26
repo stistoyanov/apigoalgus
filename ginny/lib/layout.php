@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__.'/helpers.php';
+require_once __DIR__.'/api-client.php';
 
 /**
  * @param array{
@@ -24,9 +25,25 @@ function ginny_header(array $meta = []): void
     $paths = $meta['paths'] ?? ginny_paths($locale, $page);
     $base = $paths['base'];
     $active = $meta['active'] ?? 'home';
+    $payload = $meta['payload'] ?? null;
 
     $title = $meta['title'] ?? ginny_t('meta_home_title', $locale);
     $description = $meta['description'] ?? ginny_t('meta_home_desc', $locale);
+    $navHome = is_array($payload) ? ginny_c($payload, 'nav', 'home', ginny_t('nav_home', $locale)) : ginny_t('nav_home', $locale);
+    $navNews = is_array($payload) ? ginny_c($payload, 'nav', 'news', ginny_t('nav_news', $locale)) : ginny_t('nav_news', $locale);
+    $navGallery = is_array($payload) ? ginny_c($payload, 'nav', 'gallery', ginny_t('nav_gallery', $locale)) : ginny_t('nav_gallery', $locale);
+    $navKitchen = is_array($payload) ? ginny_c($payload, 'nav', 'kitchen', ginny_t('nav_kitchen', $locale)) : ginny_t('nav_kitchen', $locale);
+    $kitchenUrl = is_array($payload)
+        ? ($locale === 'en'
+            ? ginny_s($payload, 'sister_url_en', ginny_kitchen_url('en'))
+            : ginny_s($payload, 'sister_url', ginny_kitchen_url('bg')))
+        : ginny_kitchen_url($locale);
+    $favicon = is_array($payload)
+        ? ginny_media_url($payload, 'favicon', 'images/favicon.png', $base)
+        : ginny_asset('images/favicon.png', $base);
+    $logo = is_array($payload)
+        ? ginny_media_url($payload, 'logo', 'images/logo.png', $base)
+        : ginny_asset('images/logo.png', $base);
     ?>
 <!DOCTYPE html>
 <html lang="<?= ginny_esc($locale) ?>">
@@ -35,8 +52,8 @@ function ginny_header(array $meta = []): void
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= ginny_esc($title) ?></title>
     <meta name="description" content="<?= ginny_esc($description) ?>">
-    <link rel="icon" href="<?= ginny_esc(ginny_asset('images/favicon.png', $base)) ?>" type="image/png">
-    <link rel="apple-touch-icon" href="<?= ginny_esc(ginny_asset('images/favicon.png', $base)) ?>">
+    <link rel="icon" href="<?= ginny_esc($favicon) ?>" type="image/png">
+    <link rel="apple-touch-icon" href="<?= ginny_esc($favicon) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -47,7 +64,7 @@ function ginny_header(array $meta = []): void
 <header class="site-header">
     <div class="header-inner">
         <a class="logo" href="<?= ginny_esc($paths['home']) ?>">
-            <img src="<?= ginny_esc(ginny_asset('images/logo.png', $base)) ?>" alt="Ginny Rock Bar" width="120" height="85">
+            <img src="<?= ginny_esc($logo) ?>" alt="Ginny Rock Bar" width="120" height="85">
             <span class="logo-text">GINNY</span>
         </a>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="<?= ginny_esc(ginny_t('menu', $locale)) ?>">
@@ -55,10 +72,10 @@ function ginny_header(array $meta = []): void
         </button>
         <nav id="site-nav" class="site-nav" aria-label="<?= ginny_esc(ginny_t('nav_aria', $locale)) ?>">
             <ul>
-                <li><a href="<?= ginny_esc($paths['home']) ?>" class="<?= $active === 'home' ? 'is-active' : '' ?>"><?= ginny_esc(ginny_t('nav_home', $locale)) ?></a></li>
-                <li><a href="<?= ginny_esc($paths['news']) ?>" class="<?= $active === 'programa' ? 'is-active' : '' ?>"><?= ginny_esc(ginny_t('nav_news', $locale)) ?></a></li>
-                <li><a href="<?= ginny_esc($paths['gallery']) ?>" class="<?= $active === 'gallery' ? 'is-active' : '' ?>"><?= ginny_esc(ginny_t('nav_gallery', $locale)) ?></a></li>
-                <li><a href="<?= ginny_esc(ginny_kitchen_url($locale)) ?>" target="_blank" rel="noopener noreferrer"><?= ginny_esc(ginny_t('nav_kitchen', $locale)) ?></a></li>
+                <li><a href="<?= ginny_esc($paths['home']) ?>" class="<?= $active === 'home' ? 'is-active' : '' ?>"><?= ginny_esc($navHome) ?></a></li>
+                <li><a href="<?= ginny_esc($paths['news']) ?>" class="<?= $active === 'programa' ? 'is-active' : '' ?>"><?= ginny_esc($navNews) ?></a></li>
+                <li><a href="<?= ginny_esc($paths['gallery']) ?>" class="<?= $active === 'gallery' ? 'is-active' : '' ?>"><?= ginny_esc($navGallery) ?></a></li>
+                <li><a href="<?= ginny_esc($kitchenUrl) ?>" target="_blank" rel="noopener noreferrer"><?= ginny_esc($navKitchen) ?></a></li>
             </ul>
             <div class="lang-switch" aria-label="<?= ginny_esc(ginny_t('lang_aria', $locale)) ?>">
                 <?php if ($locale === 'bg'): ?>

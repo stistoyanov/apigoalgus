@@ -6,6 +6,17 @@ alwaysApply: true
 
 BarberGarage (`barbergarage.bg`) is a client site whose **content source of truth** lives in apigoalgus (`api.goalgus.bg`). The static folder `barbergarage/` is the layout shell; Phase 2 will fetch JSON from the API server-side. Do not edit static HTML for copy that belongs in the CMS.
 
+## Sibling sites (same CMS)
+
+Ginny (`ginny.bg`, slug `ginny`) and Kitchen (`kitchen.ginny.bg`, slug `kitchen`) use the **same** Sites tables/API/dashboard pattern. Extra shapes:
+
+- `site_posts` — Ginny programa / Instagram sync (`php artisan sites:sync-instagram ginny`, hourly)
+- `site_menu_items` — Kitchen brunch + mains
+- API payload also returns `posts` and `menu`
+- Shells: `ginny/lib/api-client.php`, `kitchen/lib/api-client.php` (static i18n fallback when `config.php` missing)
+
+Dashboard: `/dashboard/sites` lists all three. Tabs Posts (Ginny) and Menu (Kitchen) appear per site.
+
 ## Architecture
 
 - **Content & settings** → `site_contents`, `site_settings` tables; edited in `/dashboard/sites/barbergarage`.

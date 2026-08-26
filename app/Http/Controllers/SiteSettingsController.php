@@ -33,20 +33,37 @@ class SiteSettingsController extends Controller
             'address_en' => ['required', 'string', 'max:500'],
             'facebook_url' => ['nullable', 'url', 'max:500'],
             'instagram_url' => ['nullable', 'url', 'max:500'],
-            'map_lat' => ['required', 'numeric'],
-            'map_lng' => ['required', 'numeric'],
-            'map_zoom' => ['required', 'integer', 'min:1', 'max:21'],
-            'gallery_cap' => ['required', 'integer', 'min:1', 'max:500'],
-            'video_cap' => ['required', 'integer', 'min:1', 'max:50'],
-            'hours' => ['required', 'array', 'size:7'],
-            'hours.*.day_bg' => ['required', 'string', 'max:40'],
-            'hours.*.day_en' => ['required', 'string', 'max:40'],
+            'sister_url' => ['nullable', 'url', 'max:500'],
+            'sister_url_en' => ['nullable', 'url', 'max:500'],
+            'hours_label_bg' => ['nullable', 'string', 'max:120'],
+            'hours_label_en' => ['nullable', 'string', 'max:120'],
+            'brunch_hours_bg' => ['nullable', 'string', 'max:120'],
+            'brunch_hours_en' => ['nullable', 'string', 'max:120'],
+            'map_embed' => ['nullable', 'string', 'max:2000'],
+            'map_lat' => ['nullable', 'numeric'],
+            'map_lng' => ['nullable', 'numeric'],
+            'map_zoom' => ['nullable', 'integer', 'min:1', 'max:21'],
+            'gallery_cap' => ['nullable', 'integer', 'min:0', 'max:500'],
+            'video_cap' => ['nullable', 'integer', 'min:0', 'max:50'],
+            'instagram_user_id' => ['nullable', 'string', 'max:80'],
+            'instagram_access_token' => ['nullable', 'string', 'max:500'],
+            'hours' => ['nullable', 'array'],
+            'hours.*.day_bg' => ['nullable', 'string', 'max:40'],
+            'hours.*.day_en' => ['nullable', 'string', 'max:40'],
             'hours.*.hours' => ['nullable', 'string', 'max:40'],
             'hours.*.closed_bg' => ['nullable', 'string', 'max:40'],
             'hours.*.closed_en' => ['nullable', 'string', 'max:40'],
         ]);
 
-        $this->repository->updateSettings($site, $validated);
+        // Never wipe an existing Instagram token with a blank field.
+        if (($validated['instagram_access_token'] ?? '') === '') {
+            unset($validated['instagram_access_token']);
+        }
+
+        $this->repository->updateSettings($site, array_filter(
+            $validated,
+            fn ($value) => $value !== null,
+        ));
 
         ActivityLogger::log(
             action: 'sites.settings.updated',

@@ -22,6 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('scheduler:heartbeat')
             ->everyMinute()
             ->withoutOverlapping();
+
+        $schedule->command('sites:sync-instagram ginny')
+            ->hourly()
+            ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

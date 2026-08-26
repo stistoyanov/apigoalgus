@@ -10,6 +10,8 @@ use App\Http\Controllers\SchedulerLogController;
 use App\Http\Controllers\SiteContentController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\SiteMediaController;
+use App\Http\Controllers\SiteMenuItemController;
+use App\Http\Controllers\SitePostController;
 use App\Http\Controllers\SiteSettingsController;
 use App\Http\Controllers\SiteTokenController;
 use App\Http\Controllers\UserActivityController;
@@ -88,12 +90,20 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard/sites/{site:slug}', [SiteController::class, 'show'])->name('dashboard.sites.show');
         Route::get('/dashboard/sites/{site:slug}/content', [SiteContentController::class, 'edit'])->name('dashboard.sites.content');
         Route::post('/dashboard/sites/{site:slug}/content', [SiteContentController::class, 'update'])->name('dashboard.sites.content.save');
+        Route::get('/dashboard/sites/{site:slug}/posts', [SitePostController::class, 'index'])->name('dashboard.sites.posts');
+        Route::post('/dashboard/sites/{site:slug}/posts', [SitePostController::class, 'store'])->name('dashboard.sites.posts.store');
+        Route::post('/dashboard/sites/{site:slug}/posts/{post}', [SitePostController::class, 'update'])->name('dashboard.sites.posts.update');
+        Route::post('/dashboard/sites/{site:slug}/posts/{post}/delete', [SitePostController::class, 'destroy'])->name('dashboard.sites.posts.destroy');
+        Route::get('/dashboard/sites/{site:slug}/menu', [SiteMenuItemController::class, 'index'])->name('dashboard.sites.menu');
+        Route::post('/dashboard/sites/{site:slug}/menu', [SiteMenuItemController::class, 'store'])->name('dashboard.sites.menu.store');
+        Route::post('/dashboard/sites/{site:slug}/menu/{item}', [SiteMenuItemController::class, 'update'])->name('dashboard.sites.menu.update');
+        Route::post('/dashboard/sites/{site:slug}/menu/{item}/delete', [SiteMenuItemController::class, 'destroy'])->name('dashboard.sites.menu.destroy');
         Route::get('/dashboard/sites/{site:slug}/settings', [SiteSettingsController::class, 'edit'])->name('dashboard.sites.settings');
         Route::post('/dashboard/sites/{site:slug}/settings', [SiteSettingsController::class, 'update'])->name('dashboard.sites.settings.save');
         Route::get('/dashboard/sites/{site:slug}/media', [SiteMediaController::class, 'index'])->name('dashboard.sites.media');
         Route::post('/dashboard/sites/{site:slug}/media', [SiteMediaController::class, 'store'])->name('dashboard.sites.media.upload');
         Route::post('/dashboard/sites/{site:slug}/media/brand/{purpose}', [SiteMediaController::class, 'replaceBrand'])
-            ->whereIn('purpose', ['hero_bg', 'about_photo', 'logo', 'favicon'])
+            ->whereIn('purpose', ['hero_bg', 'about_photo', 'logo', 'favicon', 'drinks', 'story_bg', 'cheers_bg'])
             ->name('dashboard.sites.media.brand');
         Route::post('/dashboard/sites/{site:slug}/media/{media}/delete', [SiteMediaController::class, 'destroy'])->name('dashboard.sites.media.destroy');
         Route::post('/dashboard/sites/{site:slug}/media/{media}/move', [SiteMediaController::class, 'move'])->name('dashboard.sites.media.move');
