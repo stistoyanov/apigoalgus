@@ -8,6 +8,11 @@ DirectoryIndex index.php index.html
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
+
+  # Force HTTPS (also enable "HTTPS Redirect" in cPanel → Domains).
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
   # /en -> /en/
   RewriteRule ^en$ en/ [R=301,L,NC]
 </IfModule>
